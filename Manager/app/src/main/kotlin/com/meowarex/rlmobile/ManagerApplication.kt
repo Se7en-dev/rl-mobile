@@ -22,10 +22,11 @@ import com.meowarex.rlmobile.ui.screens.logs.LogsListScreenModel
 import com.meowarex.rlmobile.ui.screens.patching.PatchingScreenModel
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptionsModel
 import com.meowarex.rlmobile.ui.screens.permissions.PermissionsModel
-import com.meowarex.rlmobile.ui.screens.plugins.PluginsModel
 import com.meowarex.rlmobile.ui.screens.settings.SettingsModel
 import com.meowarex.rlmobile.ui.widgets.updater.UpdaterViewModel
+import com.meowarex.rlmobile.updatechecker.UpdateCheckWorker
 import kotlinx.coroutines.Dispatchers
+import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.*
@@ -57,7 +58,6 @@ class ManagerApplication : Application() {
             // UI Models
             modules(module {
                 factoryOf(::HomeModel)
-                factoryOf(::PluginsModel)
                 factoryOf(::AboutModel)
                 factoryOf(::PatchingScreenModel)
                 factoryOf(::SettingsModel)
@@ -100,6 +100,14 @@ class ManagerApplication : Application() {
             ImageLoader.Builder(context)
                 .fetcherCoroutineContext(Dispatchers.IO.limitedParallelism(5))
                 .build()
+        }
+
+        // Schedule periodic update check only when the user has opted in,
+        // so the disabled state survives app restarts instead of being re-enqueued.
+        if (get<PreferencesManager>().autoUpdateCheck) {
+            UpdateCheckWorker.schedule(this)
+        } else {
+            UpdateCheckWorker.cancel(this)
         }
     }
 }
