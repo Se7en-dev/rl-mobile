@@ -38,16 +38,11 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
 
         val patches = mutableListOf<LoadedPatch>()
 
-        // Load and parse all the patches from the smali patch archive.
-        // Extension classes (extension/**/*.smali) are extracted into smaliDir
-        // so they get assembled into the new dex alongside patched classes.
+        // Load and parse all the patches from the smali archive.
         container.log("Loading patches from smali patch archive: ${patchesZip.absolutePath}")
         smaliDir.mkdirs()
         ZipReader(patchesZip).use { zip ->
-            // Iterate in filename order so patches apply deterministically, matching
-            // the apply-order contract in patches/README. Zip iteration order would
-            // otherwise depend on archive layout and could break ordered patches that
-            // share a target file.
+            // Iterate in filename order so patches apply deterministically
             for (patchFile in zip.entryNames.sorted()) {
                 container.log("Parsing patch file $patchFile")
                 if (patchFile.endsWith("/")) continue
@@ -73,8 +68,8 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
 
                 val lines = zip.openEntry(patchFile)!!.read()
                     .decodeToString()
-                    .replace("\r\n", "\n") // Replace CRLF endings with LF endings to be sure here
-                    .trimEnd { it == '\n' } // Remove trailing new lines to work with diff output properly
+                    .replace("\r\n", "\n") // Replace CRLF endings with LF
+                    .trimEnd { it == '\n' } // Remove trailing new lines
                     .split('\n')
 
                 try {
@@ -96,7 +91,7 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
             }
         }
 
-        // Disassemble all the classes we have patches for from all the dex files
+        // Disassemble all the classes
         container.log("Disassembling target classes in APK")
         ZipReader(apk).use { zip ->
             for (file in zip.entryNames) {
@@ -117,11 +112,10 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
                         /* dexFile = */ dexFile,
                         /* outputDir = */ smaliDir,
                         /* jobs = */ coreCount - 1,
-                        /* options = */ BaksmaliOptions().apply {
+                        /* options = */
+                        BaksmaliOptions().apply {
                             localsDirective = true
-                            // Match apktool's label naming (:cond_0, :cond_1, ...) so patches
-                            // authored from `apktool d` decompilation apply cleanly. Default
-                            // would emit offset-based labels like :cond_8de.
+                            // Match apktool label naming
                             sequentialLabels = true
                         },
                         /* classes = */ patches.map { "L${it.fullClassName};" },
@@ -135,7 +129,7 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
             }
         }
 
-        // Apply all the patches to the smali files
+        // Apply all the patches to smali files
         container.log("Applying smali patches to disassembled files")
         for ((fullClassName, patch) in patches) {
             container.log("Applying patch to class $fullClassName")
@@ -156,11 +150,11 @@ class SmaliPatchStep : Step(), IDexProvider, KoinComponent {
             }
         }
 
-        // Assemble the patched classes back into a single dex
+        // Assemble patched dex
         container.log("Reassembling patches smali classes into new dex")
         smaliDir.mkdir()
 
-        // Capture stdout/stderr while assembling smali
+        // Capture stdout/stderr assembling smali
         val originalStdout = System.out
         val originalStderr = System.err
         val captured = ByteArrayOutputStream()
