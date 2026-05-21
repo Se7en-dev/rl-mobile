@@ -8,6 +8,8 @@ import com.meowarex.rlmobile.network.services.RadiantLyricsGithubService
 class CommitsPagingSource(
     private val github: RadiantLyricsGithubService,
 ) : PagingSource<Int, GithubCommit>() {
+    private val seenShas = mutableSetOf<String>()
+    private val seenTitles = mutableSetOf<String>()
 
     override fun getRefreshKey(state: PagingState<Int, GithubCommit>): Int? =
         state.anchorPosition?.let {
@@ -19,7 +21,15 @@ class CommitsPagingSource(
         val page = params.key ?: 0
         return when (val r = github.getCommits(page)) {
             is ApiResponse.Success -> LoadResult.Page(
-                data = r.data,
+                data = r.data.filter { commit ->
+                    val title = commit.commit.message.lineSequence().first().trim()
+                    when {
+                        title.startsWith("Merge ") -> false
+                        !seenShas.add(commit.sha) -> false
+                        !seenTitles.add(title) -> false
+                        else -> true
+                    }
+                },
                 prevKey = if (page > 0) page - 1 else null,
                 nextKey = if (r.data.isNotEmpty()) page + 1 else null,
             )
