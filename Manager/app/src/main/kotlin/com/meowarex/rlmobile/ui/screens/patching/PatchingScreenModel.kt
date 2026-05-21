@@ -87,9 +87,9 @@ class PatchingScreenModel(
         }
     }
 
-    fun clearCache() = screenModelScope.launchIO {
+    fun clearCache() {
         paths.clearCache()
-        mainThread { application.showToast(R.string.action_cleared_cache) }
+        application.showToast(R.string.action_cleared_cache)
     }
 
     fun getCurrentInstallId(): String? = installId

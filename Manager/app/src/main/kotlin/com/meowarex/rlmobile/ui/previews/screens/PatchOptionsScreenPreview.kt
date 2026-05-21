@@ -34,6 +34,9 @@ private fun PatchOptionsScreenPreview(
             onSelectCustomInjector = {},
             customPatches = parameters.customPatches,
             onSelectCustomPatches = {},
+            enabledPatchCount = KnownPatch.All.size,
+            isPatchEnabled = { true },
+            onTogglePatch = { _, _ -> },
             isConfigValid = parameters.isConfigValid,
             onInstall = {},
         )

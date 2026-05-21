@@ -64,13 +64,10 @@ class SettingsModel(
         if (value) UpdateCheckWorker.schedule(application) else UpdateCheckWorker.cancel(application)
     }
 
-    fun clearCache() = screenModelScope.launchIO {
+    fun clearCache() {
         paths.clearCache()
-
-        mainThread {
-            patchedApkExists = false
-            application.showToast(R.string.action_cleared_cache)
-        }
+        patchedApkExists = false
+        application.showToast(R.string.action_cleared_cache)
     }
 
     fun copyInstallInfo() {

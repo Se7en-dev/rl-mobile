@@ -34,6 +34,8 @@ data class PatchOptions(
      * A custom smali patches bundle that was used rather than the latest.
      */
     val customPatches: PatchComponent? = null,
+
+    val disabledPatches: Set<String> = emptySet(),
 ) : Parcelable {
     companion object {
         val Default = PatchOptions(
@@ -42,6 +44,7 @@ data class PatchOptions(
             debuggable = false,
             customInjector = null,
             customPatches = null,
+            disabledPatches = emptySet(),
         )
     }
 }
