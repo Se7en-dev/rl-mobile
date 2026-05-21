@@ -50,6 +50,45 @@ class PatchOptionsModel(
         debuggable = value
     }
 
+    // ---------- Patch selection state ----------
+    var disabledPatches by mutableStateOf(prefilledOptions.disabledPatches)
+        private set
+
+    fun isPatchEnabled(patch: KnownPatch): Boolean =
+        patch.fileNames.none { it in disabledPatches }
+
+    fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
+        val units = if (enabled) {
+            buildSet {
+                fun addWithDeps(p: KnownPatch) {
+                    if (add(p)) p.requires.forEach(::addWithDeps)
+                }
+                addWithDeps(patch)
+            }
+        } else {
+            buildSet {
+                fun addWithDependents(p: KnownPatch) {
+                    if (add(p)) {
+                        KnownPatch.All
+                            .filter { p in it.requires }
+                            .forEach(::addWithDependents)
+                    }
+                }
+                addWithDependents(patch)
+            }
+        }
+
+        val affectedFiles = units.flatMap { it.fileNames }.toSet()
+        disabledPatches = if (enabled) {
+            disabledPatches - affectedFiles
+        } else {
+            disabledPatches + affectedFiles
+        }
+    }
+
+    val enabledPatchCount: Int
+        get() = KnownPatch.All.count { isPatchEnabled(it) }
+
     // ---------- Custom components state ----------
     var customInjector by mutableStateOf<PatchComponent?>(null)
         private set
@@ -93,6 +132,7 @@ class PatchOptionsModel(
             debuggable = debuggable,
             customInjector = customInjector,
             customPatches = customPatches,
+            disabledPatches = disabledPatches,
         )
     }
 

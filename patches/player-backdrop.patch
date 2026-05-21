@@ -1,14 +1,6 @@
+# rl-locals: com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali e( 71
 --- a/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
-@@ -2966,7 +2966,7 @@
- .end method
- 
- .method public static final e(ILandroidx/compose/runtime/Composer;Lcom/tidal/android/feature/playerscreen/ui/k;Lcom/tidal/android/feature/playerscreen/ui/r$a;Ltl0/a;Ltl0/l;Z)V
--    .locals 61
-+    .locals 71    # extra regs for blur backdrop
-     .annotation build Landroidx/compose/runtime/Composable;
-     .end annotation
- 
 @@ -4164,6 +4164,133 @@
  
      invoke-static {v5, v3, v4}, Landroidx/compose/runtime/Updater;->set-impl(Landroidx/compose/runtime/Composer;Ljava/lang/Object;Ltl0/p;)V

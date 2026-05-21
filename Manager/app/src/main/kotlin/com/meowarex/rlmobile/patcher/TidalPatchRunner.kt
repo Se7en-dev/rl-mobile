@@ -22,7 +22,7 @@ class TidalPatchRunner(
         CopyDependenciesStep(),
 
         // Patch
-        SmaliPatchStep(),
+        SmaliPatchStep(options),
         ReorganizeDexStep(),
         PatchManifestStep(options),
         PatchCertsStep(),

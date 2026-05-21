@@ -35,8 +35,15 @@ class PathManager(
     val patchedApk = patchingWorkingDir.resolve("patched.apk")
 
     fun clearCache() {
-        for (dir in arrayOf(patchingDir, cacheDownloadDir, context.cacheDir))
-            dir.deleteRecursively()
+        val targets = arrayOf(
+            patchingDownloadDir,
+            patchingWorkingDir,
+            cacheDownloadDir,
+            context.cacheDir,
+        )
+        for (dir in targets) {
+            if (dir.exists()) dir.deleteRecursively()
+        }
     }
 
     fun cachedTidalApk(version: Int, split: String = "base"): File = patchingDownloadDir

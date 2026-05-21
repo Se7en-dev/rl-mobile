@@ -21,6 +21,7 @@ import com.meowarex.rlmobile.ui.screens.componentopts.PatchComponent
 import com.meowarex.rlmobile.ui.screens.patching.PatchingScreen
 import com.meowarex.rlmobile.ui.screens.patchopts.components.PackageNameStateLabel
 import com.meowarex.rlmobile.ui.screens.patchopts.components.PatchOptionsAppBar
+import com.meowarex.rlmobile.ui.screens.patchopts.components.PatchSelectionAccordion
 import com.meowarex.rlmobile.ui.screens.patchopts.components.options.*
 import com.meowarex.rlmobile.ui.util.spacedByLastAtBottom
 import kotlinx.parcelize.IgnoredOnParcel
@@ -59,6 +60,10 @@ class PatchOptionsScreen(
             onSelectCustomInjector = { model.selectCustomInjector(navigator) },
             onSelectCustomPatches = { model.selectCustomPatches(navigator) },
 
+            enabledPatchCount = model.enabledPatchCount,
+            isPatchEnabled = model::isPatchEnabled,
+            onTogglePatch = model::setPatchEnabled,
+
             isConfigValid = model.isConfigValid,
             onInstall = {
                 navigator.push(PatchingScreen(model.generateConfig()))
@@ -87,6 +92,10 @@ fun PatchOptionsScreenContent(
     onSelectCustomInjector: () -> Unit,
     customPatches: PatchComponent?,
     onSelectCustomPatches: () -> Unit,
+
+    enabledPatchCount: Int,
+    isPatchEnabled: (KnownPatch) -> Boolean,
+    onTogglePatch: (KnownPatch, Boolean) -> Unit,
 
     isConfigValid: Boolean,
     onInstall: () -> Unit,
@@ -147,6 +156,14 @@ fun PatchOptionsScreenContent(
                     )
                 }
             }
+
+            PatchSelectionAccordion(
+                enabledCount = enabledPatchCount,
+                totalCount = KnownPatch.All.size,
+                isEnabled = isPatchEnabled,
+                onToggle = onTogglePatch,
+                modifier = Modifier.padding(top = 4.dp),
+            )
 
             if (isDevMode) {
                 TextDivider(
