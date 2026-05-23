@@ -39,8 +39,6 @@ class PMResultReceiver(
                 context.showToast(if (!isUninstall) R.string.installer_install_success else R.string.installer_uninstall_success)
             }
 
-            // The reason we don't do this in PMIntentReceiver is we can't tell whether it was
-            // an old session that for which `abandonSession(...)` was called
             is InstallerResult.Cancelled -> {
                 context.showToast(if (!isUninstall) R.string.installer_install_aborted else R.string.installer_uninstall_aborted)
             }

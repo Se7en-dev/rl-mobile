@@ -147,7 +147,7 @@ class UpdaterViewModel(
         // Fetch releases from GitHub (60s local cache)
         val releases = github.getManagerReleases().getOrThrow()
 
-        // Find the latest release — version is parsed from the release title (e.g. "v1.0.5")
+        // Find the latest release by parsed version
         val (version, release, apkUrl) = releases
             .mapNotNull { release ->
                 val version = SemVer.parseOrNull(release.name?.removePrefix("v") ?: "")

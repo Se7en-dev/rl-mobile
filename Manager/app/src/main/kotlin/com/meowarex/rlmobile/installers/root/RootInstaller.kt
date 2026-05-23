@@ -116,7 +116,7 @@ class RootInstaller(private val context: Context) : Installer {
     }
 
     private companion object {
-        // We spoof Google Play Store to prevent unnecessary checks
+        // spoof Google Play Store to prevent unnecessary checks
         const val PLAY_PACKAGE_NAME = "com.android.vending"
 
         /**

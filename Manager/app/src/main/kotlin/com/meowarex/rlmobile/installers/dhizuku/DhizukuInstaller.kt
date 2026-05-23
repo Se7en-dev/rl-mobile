@@ -107,8 +107,7 @@ class DhizukuInstaller(
                 )
             }
 
-            // Unregister PMResultReceiver when this coroutine finishes or errors
-            // Explicitly cancel the install session if it did not finish.
+            // cancel the install session if it did not finish.
             continuation.invokeOnCancellation {
                 context.unregisterReceiver(relayReceiver)
                 sessionCallback?.let { packageInstaller.unregisterSessionCallback(it) }

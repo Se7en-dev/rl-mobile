@@ -36,7 +36,7 @@ android {
         }
 
         buildConfigField("String", "TAG", "\"RLManager\"")
-        buildConfigField("String", "SUPPORT_SERVER", "\"\"") // no support server yet
+        buildConfigField("String", "SUPPORT_SERVER", "\"\"")
 
         buildConfigField("String", "PATCHES_REPO_OWNER", "\"meowarex\"")
         buildConfigField("String", "PATCHES_REPO_NAME", "\"rl-mobile\"")

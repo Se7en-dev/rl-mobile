@@ -18,7 +18,6 @@ class PatchOptionsModel(
     private val context: Context,
     private val prefs: PreferencesManager,
 ) : ScreenModel {
-    // ---------- Package name state ----------
     var packageName by mutableStateOf(prefilledOptions.packageName)
         private set
 
@@ -30,7 +29,6 @@ class PatchOptionsModel(
         fetchPkgNameStateDebounced()
     }
 
-    // ---------- App name state ----------
     var appName by mutableStateOf(prefilledOptions.appName)
         private set
 
@@ -42,7 +40,6 @@ class PatchOptionsModel(
         appNameIsError = newAppName.length !in (1..150)
     }
 
-    // ---------- Debuggable state ----------
     var debuggable by mutableStateOf(prefilledOptions.debuggable)
         private set
 
@@ -50,7 +47,6 @@ class PatchOptionsModel(
         debuggable = value
     }
 
-    // ---------- Patch selection state ----------
     var disabledPatches by mutableStateOf(prefilledOptions.disabledPatches)
         private set
 
@@ -58,38 +54,33 @@ class PatchOptionsModel(
         patch.fileNames.none { it in disabledPatches }
 
     fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
-        val units = if (enabled) {
+        fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
             buildSet {
-                fun addWithDeps(p: KnownPatch) {
-                    if (add(p)) p.requires.forEach(::addWithDeps)
-                }
-                addWithDeps(patch)
+                fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
+                walk(seed)
             }
+
+        val enableUnits: Set<KnownPatch>
+        val disableUnits: Set<KnownPatch>
+        if (enabled) {
+            enableUnits = closure(patch) { it.requires }
+            disableUnits = enableUnits.flatMap { it.disables }
+                .flatMapTo(mutableSetOf()) { d ->
+                    closure(d) { dep -> KnownPatch.All.filter { dep in it.requires } }
+                }
         } else {
-            buildSet {
-                fun addWithDependents(p: KnownPatch) {
-                    if (add(p)) {
-                        KnownPatch.All
-                            .filter { p in it.requires }
-                            .forEach(::addWithDependents)
-                    }
-                }
-                addWithDependents(patch)
-            }
+            enableUnits = emptySet()
+            disableUnits = closure(patch) { p -> KnownPatch.All.filter { p in it.requires } }
         }
 
-        val affectedFiles = units.flatMap { it.fileNames }.toSet()
-        disabledPatches = if (enabled) {
-            disabledPatches - affectedFiles
-        } else {
-            disabledPatches + affectedFiles
-        }
+        val enableFiles = enableUnits.flatMap { it.fileNames }.toSet()
+        val disableFiles = disableUnits.flatMap { it.fileNames }.toSet()
+        disabledPatches = (disabledPatches - enableFiles) + disableFiles
     }
 
     val enabledPatchCount: Int
         get() = KnownPatch.All.count { isPatchEnabled(it) }
 
-    // ---------- Custom components state ----------
     var customInjector by mutableStateOf<PatchComponent?>(null)
         private set
     var customPatches by mutableStateOf<PatchComponent?>(null)
@@ -113,7 +104,6 @@ class PatchOptionsModel(
         )
     }
 
-    // ---------- Config generation ----------
     val isConfigValid by derivedStateOf {
         val invalidChecks = arrayOf(
             packageNameState == PackageNameState.Invalid,
@@ -136,11 +126,9 @@ class PatchOptionsModel(
         )
     }
 
-    // ---------- Other ----------
     val isDevMode: Boolean
         get() = prefs.devMode
 
-    // A throttled variant of fetchPkgNameState()
     private val fetchPkgNameStateDebounced: () -> Unit =
         screenModelScope.debounce(100L, function = ::fetchPkgNameState)
 

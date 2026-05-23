@@ -272,7 +272,7 @@ class SmaliPatchStep(
             val matchPos = findContextMatch(result, sourceLines, delta.source.position)
                 ?: throw Exception(
                     "Fuzzy match failed: could not locate context for hunk near line " +
-                        "${delta.source.position + 1} (${sourceLines.size} lines)"
+                            "${delta.source.position + 1} (${sourceLines.size} lines)"
                 )
 
             repeat(sourceLines.size) { result.removeAt(matchPos) }
@@ -288,7 +288,7 @@ class SmaliPatchStep(
         // Try at the exact hint first.
         if (matchesAt(target, sourceLines, hint)) return hint
 
-        // Walk outward from the hint, alternating below/above, until we find a unique match.
+        // Walk outward from the hint, alternating below/above, until finds a unique match.
         val maxRadius = target.size
         for (offset in 1..maxRadius) {
             val below = hint + offset

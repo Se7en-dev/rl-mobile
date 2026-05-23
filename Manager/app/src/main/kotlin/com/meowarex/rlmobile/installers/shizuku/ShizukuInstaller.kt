@@ -18,7 +18,7 @@ import kotlin.coroutines.resume
 
 /**
  * The package name of Google Play Store.
- * We spoof our installer to this when installing through Shizuku to prevent
+ * spoof our installer to this when installing through Shizuku to prevent
  * potentially unnecessary scans/checks.
  */
 private const val PLAY_PACKAGE_NAME = "com.android.vending"
