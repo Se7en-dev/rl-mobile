@@ -102,8 +102,6 @@ class ManagerApplication : Application() {
                 .build()
         }
 
-        // Schedule periodic update check only when the user has opted in,
-        // so the disabled state survives app restarts instead of being re-enqueued.
         if (get<PreferencesManager>().autoUpdateCheck) {
             UpdateCheckWorker.schedule(this)
         } else {

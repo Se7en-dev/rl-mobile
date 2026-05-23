@@ -47,8 +47,6 @@ fun Scope.provideHttpClient() = HttpClient(OkHttp) {
                 override fun lookup(hostname: String): List<InetAddress> {
                     val addresses = Dns.SYSTEM.lookup(hostname)
 
-                    // Github's nameservers do not respond to IPv6 requests for raw.githubusercontent.com,
-                    // which causes CIO, Android and OkHTTP to all hang
                     return if (hostname == "raw.githubusercontent.com") {
                         addresses.filterIsInstance<Inet4Address>()
                     } else {
@@ -77,7 +75,7 @@ fun Scope.provideHttpClient() = HttpClient(OkHttp) {
         // Default storage is in-memory
     }
 
-    // Custom plugin to allow overriding response cache headers, and force caching
+    // Custom plugin to allow overriding response cache headers (force caching)
     install("OverrideCacheControl") {
         receivePipeline.intercept(HttpReceivePipeline.Before) { response ->
             val customCacheControl = response.call.attributes.getOrNull(CustomCacheControl)

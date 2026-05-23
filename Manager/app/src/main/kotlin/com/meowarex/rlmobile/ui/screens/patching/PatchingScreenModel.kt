@@ -150,15 +150,13 @@ class PatchingScreenModel(
             .toUnsafeImmutable()
         mainThread { steps = newSteps }
 
-        // Intentionally delay to show the state change of the first step when it runs in the UI.
-        // Without this, on a fast internet connection the step just immediately shows as "Success".
+        // Tiny delay so the first step's progress is visible on fast connections
         delay(400)
 
         // Execute all the steps and catch any errors
         val error = when (val error = runner.executeAll()) {
             null -> {
-                // If install step is marked skipped then the installation was manually aborted
-                // and if so, immediately close install screen
+                // Skipped install step means user aborted, close screen
                 if (runner.getStep<InstallStep>().state == StepState.Skipped) {
                     mutableState.value = PatchingScreenState.CloseScreen
 
@@ -215,6 +213,7 @@ class PatchingScreenModel(
             R.string.fun_fact_10,
             R.string.fun_fact_11,
             R.string.fun_fact_12,
+            R.string.fun_fact_13,
         )
     }
 }

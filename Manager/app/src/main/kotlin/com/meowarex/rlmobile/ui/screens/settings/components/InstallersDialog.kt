@@ -62,7 +62,7 @@ fun InstallersDialog(
             }
 
             InstallerSetting.Intent -> {
-                // We don't know whether this device supports this method until we try.
+                // don't know whether this device supports this method
             }
 
             InstallerSetting.Shizuku -> {

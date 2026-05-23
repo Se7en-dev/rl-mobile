@@ -25,7 +25,7 @@ object ManifestPatcher {
         appName: String,
         debuggable: Boolean,
     ): ByteArray {
-        // Extract original package name so we can rewrite every reference to it
+        // Extract original package name to rewrite every reference to it
         // (permissions, provider authorities) to the new packageName.
         var originalPackage: String? = null
         AxmlReader(manifestBytes).accept(object : AxmlVisitor() {
@@ -58,11 +58,12 @@ object ManifestPatcher {
                         COMPILE_SDK_VERSION_CODENAME to "6.0-2438415"
                     )
                 ) {
-                    // Drop split-only manifest attributes — we merged all splits into one APK
+                    // Drop split-only manifest attributes because merged all splits into one APK
                     override fun attr(ns: String?, name: String, resourceId: Int, type: Int, value: Any?) {
                         if (name == IS_SPLIT_REQUIRED || name == REQUIRED_SPLIT_TYPES || name == SPLIT_TYPES) return
                         super.attr(ns, name, resourceId, type, value)
                     }
+
                     private var addExternalStoragePerm = false
 
                     override fun child(ns: String?, name: String): NodeVisitor {
@@ -72,7 +73,13 @@ object ManifestPatcher {
                         if (addExternalStoragePerm) {
                             super
                                 .child(null, "uses-permission")
-                                .attr(ANDROID_NAMESPACE, "name", android.R.attr.name, TYPE_STRING, Manifest.permission.MANAGE_EXTERNAL_STORAGE)
+                                .attr(
+                                    ANDROID_NAMESPACE,
+                                    "name",
+                                    android.R.attr.name,
+                                    TYPE_STRING,
+                                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                                )
                             addExternalStoragePerm = false
                         }
 
@@ -141,7 +148,13 @@ object ManifestPatcher {
                                     if (addMetadata) {
                                         addMetadata = false
                                         super.child(ANDROID_NAMESPACE, "meta-data").apply {
-                                            attr(ANDROID_NAMESPACE, "name", android.R.attr.name, TYPE_STRING, "isRadiantLyrics")
+                                            attr(
+                                                ANDROID_NAMESPACE,
+                                                "name",
+                                                android.R.attr.name,
+                                                TYPE_STRING,
+                                                "isRadiantLyrics"
+                                            )
                                             attr(ANDROID_NAMESPACE, "value", android.R.attr.value, TYPE_INT_BOOLEAN, 1)
                                         }
                                     }
@@ -149,7 +162,13 @@ object ManifestPatcher {
                                     return when (name) {
                                         "activity" -> ReplaceAttrsVisitor(visitor, mapOf("label" to appName))
                                         "provider" -> object : NodeVisitor(visitor) {
-                                            override fun attr(ns: String?, name: String, resourceId: Int, type: Int, value: Any?) {
+                                            override fun attr(
+                                                ns: String?,
+                                                name: String,
+                                                resourceId: Int,
+                                                type: Int,
+                                                value: Any?
+                                            ) {
                                                 super.attr(
                                                     ns, name, resourceId, type,
                                                     if (name == "authorities") {
@@ -173,11 +192,23 @@ object ManifestPatcher {
                                         TYPE_INT_BOOLEAN,
                                         1
                                     )
-                                    if (addDebuggable) super.attr(ANDROID_NAMESPACE, DEBUGGABLE, android.R.attr.debuggable, TYPE_INT_BOOLEAN, 1)
+                                    if (addDebuggable) super.attr(
+                                        ANDROID_NAMESPACE,
+                                        DEBUGGABLE,
+                                        android.R.attr.debuggable,
+                                        TYPE_INT_BOOLEAN,
+                                        1
+                                    )
 
                                     // Disable AOT (Necessary for AOSP Android 15)
                                     if (Build.VERSION.SDK_INT >= 29 && addUseEmbeddedDex) {
-                                        super.attr(ANDROID_NAMESPACE, USE_EMBEDDED_DEX, android.R.attr.useEmbeddedDex, TYPE_INT_BOOLEAN, 1)
+                                        super.attr(
+                                            ANDROID_NAMESPACE,
+                                            USE_EMBEDDED_DEX,
+                                            android.R.attr.useEmbeddedDex,
+                                            TYPE_INT_BOOLEAN,
+                                            1
+                                        )
                                     }
 
                                     if (addExtractNativeLibs) super.attr(
@@ -209,7 +240,13 @@ object ManifestPatcher {
             val replace = attrs.containsKey(name)
             val newValue = attrs[name]
 
-            super.attr(ns, name, resourceId, if (newValue is String) TYPE_STRING else type, if (replace) newValue else value)
+            super.attr(
+                ns,
+                name,
+                resourceId,
+                if (newValue is String) TYPE_STRING else type,
+                if (replace) newValue else value
+            )
         }
     }
 }

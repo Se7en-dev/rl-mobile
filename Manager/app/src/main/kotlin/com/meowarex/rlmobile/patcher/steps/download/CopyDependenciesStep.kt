@@ -43,7 +43,7 @@ class CopyDependenciesStep : Step(), KoinComponent {
             val targetFileStorageId = storageManager.getUuidForPath(apk)
             val fileSize = srcApk.length()
 
-            // We request 3.5x the size of the APK, to give space for the following:
+            // request 3.5x the size of the APK, to give space for the following:
             // 1) A copy of the APK
             // 2) Modifying the copied APK (whether this is necessary I'm not sure)
             // 2) Extracting native libs and other various operations
