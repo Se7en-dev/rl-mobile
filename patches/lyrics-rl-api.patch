@@ -1,0 +1,21 @@
+--- a/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
++++ b/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
+@@ -1277,7 +1277,9 @@
+     .line 104
+     .line 105
+     check-cast v1, Lcom/aspiro/wamp/model/Track;
+
++    invoke-static {v0, v1}, Lradiant/RLAPILyricsHook;->onWampTrack(Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;Lcom/aspiro/wamp/model/Track;)V    # RL API lyrics hook
++
+     .line 106
+     .line 107
+     invoke-virtual {v1}, Lcom/aspiro/wamp/model/MediaItem;->getId()I
+@@ -1551,7 +1553,7 @@
+     .line 235
+     .line 236
+     .line 237
+-    if-nez v9, :cond_a
++    goto :cond_a    # skip TIDAL N=false setter
+
+     .line 238
+     .line 239
