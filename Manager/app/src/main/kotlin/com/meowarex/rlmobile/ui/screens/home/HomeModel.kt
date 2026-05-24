@@ -117,18 +117,22 @@ class HomeModel(
 
         val remote = remoteDataJson
         val currentPatches = remote?.patchesVersion?.toString()
+        val installedPatches = installMetadata?.patchesVersion?.toString()
         val previousPatches = initialPrefPatchesVersion.ifEmpty {
-            installMetadata?.patchesVersion?.toString().orEmpty()
+            installedPatches.orEmpty()
         }
         val patchesFrom = previousPatches.takeIf { it.isNotEmpty() }
         val patchesTo = currentPatches ?: previousPatches.ifEmpty { "?" }
+        val patchesUpdateAvailable = installedPatches != null
+            && currentPatches != null
+            && installedPatches != currentPatches
         add(
             VersionDelta(
                 label = application.getString(R.string.manager_update_row_patches),
                 iconRes = R.drawable.ic_extension,
                 from = patchesFrom,
                 to = patchesTo,
-                tag = if (patchesFrom != null && patchesFrom != patchesTo)
+                tag = if (patchesUpdateAvailable)
                     application.getString(R.string.manager_update_tag_available) else null,
             )
         )
@@ -142,13 +146,16 @@ class HomeModel(
         val tidalTo = currentTidal?.toString()
             ?: previousTidal.takeIf { it > 0 }?.toString()
             ?: "?"
+        val tidalUpdateAvailable = installedTidalVersionCode > 0
+            && currentTidal != null
+            && installedTidalVersionCode != currentTidal
         add(
             VersionDelta(
                 label = application.getString(R.string.manager_update_row_tidal),
                 iconRes = R.drawable.ic_music_note,
                 from = tidalFrom,
                 to = tidalTo,
-                tag = if (tidalFrom != null && tidalFrom != tidalTo)
+                tag = if (tidalUpdateAvailable)
                     application.getString(R.string.manager_update_tag_available) else null,
             )
         )

@@ -208,7 +208,9 @@ private fun ColumnScope.HomeContent(
         val label = when {
             state.latestTidalVersionCode == null -> "Loading…"
             install == null -> "Install"
-            install.isUpToDate == false -> "Update"
+            patchesBehind && tidalBehind -> "Update Patches & TIDAL"
+            patchesBehind -> "Update Patches"
+            tidalBehind -> "Update TIDAL"
             else -> "Repatch"
         }
         Text(
