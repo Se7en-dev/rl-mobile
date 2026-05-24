@@ -138,11 +138,6 @@
   <string name="contributors_contributions">%s contributions</string>
 
   <string name="network_load_fail">Failed to load</string>
-  <string name="network_warning_title">Metered network</string>
-  <string
-    name="network_warning_body"
-  >It appears you are connected to mobile data or a potentially metered network. Continuing with the installation may result in several hundred megabytes being downloaded. Are you sure you want to continue?</string>
-  <string name="network_warning_disable">Don\'t show this again</string>
 
   <string name="version_none">None</string>
   <string name="version_stable">Stable</string>
