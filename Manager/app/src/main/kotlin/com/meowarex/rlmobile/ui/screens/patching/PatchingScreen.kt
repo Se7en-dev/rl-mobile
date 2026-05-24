@@ -28,7 +28,6 @@ import com.meowarex.rlmobile.patcher.steps.StepGroup
 import com.meowarex.rlmobile.ui.components.MainActionButton
 import com.meowarex.rlmobile.ui.components.Wakelock
 import com.meowarex.rlmobile.ui.components.dialogs.InstallerAbortDialog
-import com.meowarex.rlmobile.ui.components.dialogs.NetworkWarningDialog
 import com.meowarex.rlmobile.ui.screens.log.LogScreen
 import com.meowarex.rlmobile.ui.screens.patching.components.*
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptions
@@ -109,19 +108,6 @@ class PatchingScreen(
             }
 
             listState.animateScrollToItem(0)
-        }
-
-        if (model.showNetworkWarningDialog) {
-            NetworkWarningDialog(
-                onConfirm = { neverShow ->
-                    model.hideNetworkWarning(neverShow)
-                    model.install()
-                },
-                onDismiss = { neverShow ->
-                    model.hideNetworkWarning(neverShow)
-                    navigator.pop()
-                },
-            )
         }
 
         if (showAbortWarning) {
