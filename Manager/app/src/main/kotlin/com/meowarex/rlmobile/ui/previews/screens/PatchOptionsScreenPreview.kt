@@ -37,6 +37,9 @@ private fun PatchOptionsScreenPreview(
             enabledPatchCount = KnownPatch.All.size,
             isPatchEnabled = { true },
             onTogglePatch = { _, _ -> },
+            patchLockState = { PatchLock.Free },
+            variantIndex = { 0 },
+            onSelectVariant = { _, _ -> },
             isConfigValid = parameters.isConfigValid,
             onInstall = {},
         )

@@ -50,10 +50,32 @@ class PatchOptionsModel(
     var disabledPatches by mutableStateOf(prefilledOptions.disabledPatches)
         private set
 
-    fun isPatchEnabled(patch: KnownPatch): Boolean =
-        patch.fileNames.none { it in disabledPatches }
+    var selectedVariants by mutableStateOf(prefilledOptions.selectedVariants)
+        private set
+
+    fun variantIndex(patch: KnownPatch): Int = selectedVariants[patch.name]
+        ?.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
+        ?: patch.defaultVariantIndex.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
+
+    fun isPatchEnabled(patch: KnownPatch): Boolean = if (patch.variants.isNotEmpty()) {
+        val v = patch.variants[variantIndex(patch)]
+        v.fileNames.isNotEmpty() && v.fileNames.none { it in disabledPatches }
+    } else {
+        patch.fileNames.isNotEmpty() && patch.fileNames.none { it in disabledPatches }
+    }
 
     fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
+        if (patch.variants.isNotEmpty()) {
+            val all = patch.allVariantFileNames
+            val selected = patch.variants[variantIndex(patch)].fileNames.toSet()
+            disabledPatches = if (enabled) {
+                (disabledPatches + all) - selected
+            } else {
+                disabledPatches + all
+            }
+            return
+        }
+
         fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
             buildSet {
                 fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
@@ -76,6 +98,37 @@ class PatchOptionsModel(
         val enableFiles = enableUnits.flatMap { it.fileNames }.toSet()
         val disableFiles = disableUnits.flatMap { it.fileNames }.toSet()
         disabledPatches = (disabledPatches - enableFiles) + disableFiles
+    }
+
+    fun selectVariant(patch: KnownPatch, index: Int) {
+        if (patch.variants.isEmpty() || index !in patch.variants.indices) return
+        val wasOn = isPatchEnabled(patch)
+        selectedVariants = selectedVariants + (patch.name to index)
+        if (wasOn) setPatchEnabled(patch, true)
+    }
+
+    fun lockState(patch: KnownPatch): PatchLock {
+        if (patch.variants.isNotEmpty()) return PatchLock.Free
+
+        fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
+            buildSet {
+                fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
+                walk(seed)
+            }
+
+        for (other in KnownPatch.All) {
+            if (other == patch || !isPatchEnabled(other)) continue
+
+            val requiresClosure = closure(other) { it.requires }
+            if (patch in requiresClosure - other) return PatchLock.LockedOn(other)
+
+            val disablesClosure = requiresClosure.flatMap { it.disables }
+                .flatMapTo(mutableSetOf()) { d ->
+                    closure(d) { dep -> KnownPatch.All.filter { dep in it.requires } }
+                }
+            if (patch in disablesClosure) return PatchLock.LockedOff(other)
+        }
+        return PatchLock.Free
     }
 
     val enabledPatchCount: Int
@@ -123,6 +176,7 @@ class PatchOptionsModel(
             customTidalApk = customTidalApk,
             customPatches = customPatches,
             disabledPatches = disabledPatches,
+            selectedVariants = selectedVariants,
         )
     }
 
@@ -147,7 +201,16 @@ class PatchOptionsModel(
         mainThread { packageNameState = state }
     }
 
+    private fun validatePatchSelection() {
+        for (patch in KnownPatch.All) {
+            if (isPatchEnabled(patch)) {
+                setPatchEnabled(patch, true)
+            }
+        }
+    }
+
     init {
+        validatePatchSelection()
         screenModelScope.launchBlock { fetchPkgNameState() }
     }
 
@@ -161,4 +224,10 @@ enum class PackageNameState {
     Ok,
     Invalid,
     Taken,
+}
+
+sealed class PatchLock {
+    object Free : PatchLock()
+    data class LockedOn(val by: KnownPatch) : PatchLock()
+    data class LockedOff(val by: KnownPatch) : PatchLock()
 }

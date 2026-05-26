@@ -283,6 +283,18 @@
     name="patch_enable_legacy_ui_desc"
   >[This patch will stop working soon] - Replaces the New Compose based UI with the Legacy UI (disables player-market-ui feature flag)</string>
 
+  <string name="patch_mini_player_redesign_title">Redesigned Mini-Player</string>
+  <string name="patch_mini_player_redesign_desc">Integrates the Seekbar into the control panel at the bottom of the screen.</string>
+  <string name="patch_mini_player_variant_floating_title">Floating</string>
+  <string name="patch_mini_player_variant_square_grey_title">Grey</string>
+  <string name="patch_mini_player_variant_square_black_title">Black</string>
+
+  <string name="patch_lock_required_title">Patch Required!</string>
+  <string name="patch_lock_blocked_title">Patch Blocked!</string>
+  <string name="patch_lock_required_msg">Patch Required by &lt;b>%s&lt;/b>.</string>
+  <string name="patch_lock_blocked_msg">Patch Blocked by &lt;b>%s&lt;/b>.</string>
+  <string name="action_got_it">Got it</string>
+
   <string name="componentopts_screen_title">Custom Component (%s)</string>
   <string name="componentopts_screen_desc">Select a custom build that was imported by Manager.</string>
   <string name="componentopts_selected_none">Latest</string>

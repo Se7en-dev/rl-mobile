@@ -3,6 +3,11 @@ package com.meowarex.rlmobile.ui.screens.patchopts
 import androidx.annotation.StringRes
 import com.meowarex.rlmobile.R
 
+data class PatchVariant(
+    @StringRes val titleRes: Int,
+    val fileNames: List<String>,
+)
+
 enum class KnownPatch(
     /**
      * Numeric display order in the patch options list. Lower = higher up.
@@ -18,6 +23,8 @@ enum class KnownPatch(
     @StringRes val descRes: Int,
     val requires: List<KnownPatch> = emptyList(),
     val disables: List<KnownPatch> = emptyList(),
+    val variants: List<PatchVariant> = emptyList(),
+    val defaultVariantIndex: Int = 0,
 ) {
     // Dependency-first order (later refs need backward resolution).
     // The `order` field controls display order; declaration order doesn't matter.
@@ -89,6 +96,27 @@ enum class KnownPatch(
         descRes = R.string.patch_lyrics_progress_pill_desc,
         requires = listOf(LyricsDisableCover, LyricsReplaceLyricsButton, LyricsReplaceShareButton),
     ),
+    MiniPlayerRedesign(
+        order = 50,
+        fileNames = emptyList(),
+        titleRes = R.string.patch_mini_player_redesign_title,
+        descRes = R.string.patch_mini_player_redesign_desc,
+        defaultVariantIndex = 2,
+        variants = listOf(
+            PatchVariant(
+                titleRes = R.string.patch_mini_player_variant_floating_title,
+                fileNames = listOf("mini-player-floating.patch"),
+            ),
+            PatchVariant(
+                titleRes = R.string.patch_mini_player_variant_square_grey_title,
+                fileNames = listOf("mini-player-grey.patch"),
+            ),
+            PatchVariant(
+                titleRes = R.string.patch_mini_player_variant_square_black_title,
+                fileNames = listOf("mini-player-black.patch"),
+            ),
+        ),
+    ),
     EnableLegacyUi(
         order = 10,
         fileNames = listOf("enable-legacy-ui.patch"),
@@ -107,13 +135,16 @@ enum class KnownPatch(
         ),
     );
 
+    val allVariantFileNames: Set<String>
+        get() = variants.flatMapTo(mutableSetOf()) { it.fileNames }
+
     companion object {
         /**
          * Sorted by `order` ascending. Tie-breaks fall back to the first filename
          * (alphabetical) so the order is always deterministic.
          */
         val All: List<KnownPatch> = entries.sortedWith(
-            compareBy({ it.order }, { it.fileNames.first() })
+            compareBy({ it.order }, { it.fileNames.firstOrNull() ?: it.name })
         )
     }
 }

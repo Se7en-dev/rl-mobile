@@ -18,9 +18,14 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import com.meowarex.rlmobile.R
 import com.meowarex.rlmobile.ui.screens.patchopts.KnownPatch
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchLock
+
+private data class LockInfo(val patch: KnownPatch, val lock: PatchLock)
 
 @Composable
 fun PatchSelectionAccordion(
@@ -28,6 +33,9 @@ fun PatchSelectionAccordion(
     totalCount: Int,
     isEnabled: (KnownPatch) -> Boolean,
     onToggle: (KnownPatch, Boolean) -> Unit,
+    lockState: (KnownPatch) -> PatchLock,
+    variantIndex: (KnownPatch) -> Int,
+    onSelectVariant: (KnownPatch, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -35,6 +43,8 @@ fun PatchSelectionAccordion(
         targetValue = if (expanded) 180f else 0f,
         label = "patch-accordion-arrow",
     )
+
+    var lockInfo by remember { mutableStateOf<LockInfo?>(null) }
 
     Column(
         modifier = modifier
@@ -80,6 +90,7 @@ fun PatchSelectionAccordion(
 
         AnimatedVisibility(visible = expanded) {
             Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background.copy(0.4f))
@@ -94,45 +105,73 @@ fun PatchSelectionAccordion(
                 )
 
                 for (patch in KnownPatch.All) key(patch) {
-                    PatchCheckboxRow(
+                    val checked = isEnabled(patch)
+                    val lock = lockState(patch)
+                    PatchSwitchRow(
                         title = stringResource(patch.titleRes),
                         description = stringResource(patch.descRes),
-                        checked = isEnabled(patch),
+                        checked = checked,
+                        lock = lock,
                         onCheckedChange = { onToggle(patch, it) },
+                        onLockedTap = { lockInfo = LockInfo(patch, lock) },
                     )
+
+                    if (patch.variants.isNotEmpty()) {
+                        AnimatedVisibility(visible = checked) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                            ) {
+                                PatchVariantSelector(
+                                    variants = patch.variants,
+                                    selectedIndex = variantIndex(patch),
+                                    onSelect = { idx -> onSelectVariant(patch, idx) },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
+
+    lockInfo?.let { info ->
+        PatchLockDialog(
+            thisPatch = info.patch,
+            lock = info.lock,
+            onDismiss = { lockInfo = null },
+        )
+    }
 }
 
 @Composable
-private fun PatchCheckboxRow(
+private fun PatchSwitchRow(
     title: String,
     description: String,
     checked: Boolean,
+    lock: PatchLock,
     onCheckedChange: (Boolean) -> Unit,
+    onLockedTap: () -> Unit,
 ) {
     val interactionSource = remember(::MutableInteractionSource)
+    val isLocked = lock !is PatchLock.Free
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                role = Role.Checkbox,
-            ) { onCheckedChange(!checked) }
-            .padding(vertical = 4.dp),
+                role = Role.Switch,
+            ) {
+                if (isLocked) onLockedTap() else onCheckedChange(!checked)
+            }
+            .alpha(if (isLocked) 0.45f else 1f)
+            .padding(vertical = 6.dp),
     ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            interactionSource = interactionSource,
-        )
-
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.weight(1f),
@@ -146,6 +185,78 @@ private fun PatchCheckboxRow(
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.alpha(.7f),
             )
+        }
+
+        Box {
+            Switch(
+                checked = checked,
+                enabled = !isLocked,
+                onCheckedChange = onCheckedChange,
+                interactionSource = interactionSource,
+            )
+            if (isLocked) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = remember(::MutableInteractionSource),
+                            indication = null,
+                            role = Role.Switch,
+                        ) { onLockedTap() }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PatchLockDialog(
+    thisPatch: KnownPatch,
+    lock: PatchLock,
+    onDismiss: () -> Unit,
+) {
+    val (titleRes, msgRes, blockerTitle) = when (lock) {
+        is PatchLock.LockedOn -> Triple(
+            R.string.patch_lock_required_title,
+            R.string.patch_lock_required_msg,
+            stringResource(lock.by.titleRes),
+        )
+        is PatchLock.LockedOff -> Triple(
+            R.string.patch_lock_blocked_title,
+            R.string.patch_lock_blocked_msg,
+            stringResource(lock.by.titleRes),
+        )
+        PatchLock.Free -> return
+    }
+
+    BasicAlertDialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 20.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = stringResource(titleRes),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    text = AnnotatedString.fromHtml(stringResource(msgRes, blockerTitle)),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                    ) {
+                        Text(stringResource(R.string.action_got_it))
+                    }
+                }
+            }
         }
     }
 }
