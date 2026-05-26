@@ -63,6 +63,9 @@ class PatchOptionsScreen(
             enabledPatchCount = model.enabledPatchCount,
             isPatchEnabled = model::isPatchEnabled,
             onTogglePatch = model::setPatchEnabled,
+            patchLockState = model::lockState,
+            variantIndex = model::variantIndex,
+            onSelectVariant = model::selectVariant,
 
             isConfigValid = model.isConfigValid,
             onInstall = {
@@ -96,6 +99,9 @@ fun PatchOptionsScreenContent(
     enabledPatchCount: Int,
     isPatchEnabled: (KnownPatch) -> Boolean,
     onTogglePatch: (KnownPatch, Boolean) -> Unit,
+    patchLockState: (KnownPatch) -> PatchLock,
+    variantIndex: (KnownPatch) -> Int,
+    onSelectVariant: (KnownPatch, Int) -> Unit,
 
     isConfigValid: Boolean,
     onInstall: () -> Unit,
@@ -162,6 +168,9 @@ fun PatchOptionsScreenContent(
                 totalCount = KnownPatch.All.size,
                 isEnabled = isPatchEnabled,
                 onToggle = onTogglePatch,
+                lockState = patchLockState,
+                variantIndex = variantIndex,
+                onSelectVariant = onSelectVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
 

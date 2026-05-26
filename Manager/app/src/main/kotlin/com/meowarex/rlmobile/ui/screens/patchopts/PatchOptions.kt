@@ -33,15 +33,26 @@ data class PatchOptions(
     val customPatches: PatchComponent? = null,
 
     val disabledPatches: Set<String> = emptySet(),
+
+    val selectedVariants: Map<String, Int> = emptyMap(),
 ) : Parcelable {
     companion object {
-        val Default = PatchOptions(
-            appName = "TIDAL",
-            packageName = "com.aspiro.tidal",
-            debuggable = false,
-            customTidalApk = null,
-            customPatches = null,
-            disabledPatches = (KnownPatch.DebugMenuUnlock.fileNames + KnownPatch.EnableLegacyUi.fileNames).toSet(),
-        )
+        val Default: PatchOptions = run {
+            val miniPlayerFiles = KnownPatch.MiniPlayerRedesign.allVariantFileNames
+            val disabled = (
+                KnownPatch.DebugMenuUnlock.fileNames +
+                KnownPatch.EnableLegacyUi.fileNames +
+                miniPlayerFiles
+            ).toSet()
+
+            PatchOptions(
+                appName = "TIDAL",
+                packageName = "com.aspiro.tidal",
+                debuggable = false,
+                customTidalApk = null,
+                customPatches = null,
+                disabledPatches = disabled,
+            )
+        }
     }
 }

@@ -1,0 +1,69 @@
+--- a/com/tidal/android/feature/appscaffold/ui/composable/a.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/a.smali
+@@ -116,7 +116,7 @@
+ 
+     .line 46
+     .line 47
+-    const/16 v0, 0x24
++    const/16 v0, 0x0    # zero pill corner radius
+ 
+     .line 48
+     .line 49
+@@ -162,7 +162,7 @@
+ 
+     .line 68
+     .line 69
+-    const/16 v0, 0x8
++    const/16 v0, 0x0    # zero bottom padding
+ 
+     .line 70
+     .line 71
+--- a/com/tidal/android/feature/appscaffold/ui/composable/i.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/i.smali
+@@ -2756,12 +2756,7 @@
+     invoke-static {v0, v8, v11, v12}, Landroidx/compose/foundation/layout/SizeKt;->fillMaxWidth$default(Landroidx/compose/ui/Modifier;FILjava/lang/Object;)Landroidx/compose/ui/Modifier;
+ 
+     move-result-object v0
+-
+-    .line 140
+-    invoke-static {v0}, Landroidx/compose/foundation/layout/WindowInsetsPadding_androidKt;->navigationBarsPadding(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+-
+-    move-result-object v0
+-
++    # flush bottom; skip nav inset
+     .line 141
+     invoke-interface/range {v17 .. v17}, Landroidx/compose/runtime/State;->getValue()Ljava/lang/Object;
+ 
+@@ -2773,6 +2768,8 @@
+ 
+     move-result v10
+ 
++    const/4 v10, 0x0    # zero horizontal padding
++
+     const/4 v11, 0x2
+ 
+     .line 142
+@@ -2816,6 +2813,12 @@
+ 
+     move-result-wide v10
+ 
++    const v8, -0x1000000    # 0xFF000000 opaque black
++
++    invoke-static {v8}, Landroidx/compose/ui/graphics/ColorKt;->Color(I)J    # pack to color long
++
++    move-result-wide v10    # override theme color
++
+     .line 147
+     sget-object v8, Lcom/tidal/android/feature/appscaffold/ui/composable/a;->c:Landroidx/compose/foundation/shape/RoundedCornerShape;
+ 
+@@ -2969,6 +2972,10 @@
+ 
+     invoke-static {v12, v0, v8}, Landroidx/compose/runtime/Updater;->set-impl(Landroidx/compose/runtime/Composer;Ljava/lang/Object;Lyl0/p;)V
+ 
++    const/4 v8, 0x0    # composer $changed flags
++
++    invoke-static {v15, v8}, Lradiant/MiniSeekerLine;->render(Landroidx/compose/runtime/Composer;I)V    # draw top-edge seeker
++
+     .line 172
+     sget-object v0, Landroidx/compose/foundation/layout/ColumnScopeInstance;->INSTANCE:Landroidx/compose/foundation/layout/ColumnScopeInstance;
+ 
