@@ -30,13 +30,13 @@
 -    const/4 v2, 0x0
 -
 -    invoke-static {v13, v7, v2, v4}, Lcom/tidal/android/feature/playerscreen/ui/composables/x4;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lyl0/a;)V
-+    new-instance v4, Lcom/aspiro/wamp/tidalconnect/playback/i;    # connect click lambda factory
++    new-instance v4, Landroidx/navigation/fragment/k;    # connect click lambda factory
 +
 +    move-object/from16 v6, p5    # action dispatcher
 +
 +    const/4 v8, 0x1    # connect-clicked disc
 +
-+    invoke-direct {v4, v6, v8}, Lcom/aspiro/wamp/tidalconnect/playback/i;-><init>(Ljava/lang/Object;I)V    # build lambda
++    invoke-direct {v4, v6, v8}, Landroidx/navigation/fragment/k;-><init>(Ljava/lang/Object;I)V    # build lambda
 +
 +    invoke-interface {v7, v4}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V    # cache lambda
 +
