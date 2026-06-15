@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
@@ -51,15 +50,15 @@ class UpdateCheckWorker(
             .maxByOrNull { it.first }
             ?: return Result.success()
 
-        val (version, release) = latestVersion
+        val (version, _) = latestVersion
         if (current >= version) return Result.success()
 
         Log.i(BuildConfig.TAG, "Update available: $version (installed $current)")
-        postUpdateNotification(version.toString(), release.htmlUrl)
+        postUpdateNotification(version.toString())
         return Result.success()
     }
 
-    private fun postUpdateNotification(version: String, releaseUrl: String) {
+    private fun postUpdateNotification(version: String) {
         val nm = applicationContext.getSystemService<NotificationManager>() ?: return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -78,10 +77,15 @@ class UpdateCheckWorker(
             return
         }
 
+        val launchIntent = applicationContext.packageManager
+            .getLaunchIntentForPackage(applicationContext.packageName)
+            ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+            ?: return
+
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,
             0,
-            Intent(Intent.ACTION_VIEW, Uri.parse(releaseUrl)).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+            launchIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
