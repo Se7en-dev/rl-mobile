@@ -70,6 +70,12 @@ enum class KnownPatch(
         titleRes = R.string.patch_player_backdrop_title,
         descRes = R.string.patch_player_backdrop_desc,
     ),
+    QualityBadgeColors(
+        order = 36,
+        fileNames = listOf("player-quality-badge-colors.patch"),
+        titleRes = R.string.patch_quality_badge_colors_title,
+        descRes = R.string.patch_quality_badge_colors_desc,
+    ),
     CoverEverywhere(
         order = 35,
         fileNames = listOf(
@@ -130,6 +136,7 @@ enum class KnownPatch(
             LyricsRlApi,
             LyricsKeepControlsVisible,
             PlayerBackdrop,
+            QualityBadgeColors,
             LyricsProgressPill,
             CoverEverywhere,
         ),
