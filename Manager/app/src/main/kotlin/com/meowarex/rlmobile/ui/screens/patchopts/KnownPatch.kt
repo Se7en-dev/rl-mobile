@@ -77,6 +77,12 @@ enum class KnownPatch(
         titleRes = R.string.patch_quality_badge_colors_title,
         descRes = R.string.patch_quality_badge_colors_desc,
     ),
+    PlayerOneHanded(
+        order = 37,
+        fileNames = listOf("player-one-handed.patch"),
+        titleRes = R.string.patch_player_one_handed_title,
+        descRes = R.string.patch_player_one_handed_desc,
+    ),
     CoverEverywhere(
         order = 35,
         fileNames = listOf(

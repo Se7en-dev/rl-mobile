@@ -270,6 +270,8 @@
   <string name="patch_player_backdrop_desc">Restores the legacy translucent backdrop blur behind the player.</string>
   <string name="patch_quality_badge_colors_title">Quality Badge Colors</string>
   <string name="patch_quality_badge_colors_desc">Brings color back to the player quality badge.</string>
+  <string name="patch_player_one_handed_title">One-Handed Mode</string>
+  <string name="patch_player_one_handed_desc">Mirrors the bottom player buttons left-to-right for easier one-handed reach.</string>
   <string name="patch_cover_everywhere_title">Cover Everywhere - WIP</string>
   <string name="patch_cover_everywhere_desc">Applies the blurred backdrop to every Compose based page (Home &amp; Collection)</string>
   <string name="patch_lyrics_replace_share_button_title">Replace Share Button</string>
