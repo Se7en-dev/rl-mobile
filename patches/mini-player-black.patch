@@ -56,7 +56,18 @@
      .line 147
      sget-object v8, Lcom/tidal/android/feature/appscaffold/ui/composable/a;->c:Landroidx/compose/foundation/shape/RoundedCornerShape;
  
-@@ -2969,6 +2972,10 @@
+@@ -2857,6 +2860,10 @@
+ 
+     move-result-object v0
+ 
++    invoke-static {v0}, Landroidx/compose/foundation/layout/WindowInsetsPadding_androidKt;->navigationBarsPadding(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;    # inset bar content above nav bar (Prevents Bleeding behind Nav Buttons)
++
++    move-result-object v0
++
+     .line 155
+     sget-object v8, Landroidx/compose/foundation/layout/Arrangement;->INSTANCE:Landroidx/compose/foundation/layout/Arrangement;
+ 
+@@ -2969,6 +2976,10 @@
  
      invoke-static {v12, v0, v8}, Landroidx/compose/runtime/Updater;->set-impl(Landroidx/compose/runtime/Composer;Ljava/lang/Object;Lyl0/p;)V
  
