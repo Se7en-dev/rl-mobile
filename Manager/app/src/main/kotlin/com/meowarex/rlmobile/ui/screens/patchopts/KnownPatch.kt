@@ -8,6 +8,7 @@ data class PatchVariant(
     val fileNames: List<String>,
 )
 
+
 enum class KnownPatch(
     /**
      * Numeric display order in the patch options list. Lower = higher up.
