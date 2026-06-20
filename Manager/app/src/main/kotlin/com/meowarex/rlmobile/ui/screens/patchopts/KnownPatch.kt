@@ -71,8 +71,8 @@ enum class KnownPatch(
         descRes = R.string.patch_player_backdrop_desc,
     ),
     QualityBadgeColors(
-        order = 31,
-        fileNames = listOf("quality-badge-colors.patch"),
+        order = 36,
+        fileNames = listOf("player-quality-badge-colors.patch"),
         titleRes = R.string.patch_quality_badge_colors_title,
         descRes = R.string.patch_quality_badge_colors_desc,
     ),
