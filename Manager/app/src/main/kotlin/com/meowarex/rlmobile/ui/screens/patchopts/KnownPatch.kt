@@ -2,6 +2,8 @@ package com.meowarex.rlmobile.ui.screens.patchopts
 
 import androidx.annotation.StringRes
 import com.meowarex.rlmobile.R
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchDefault.Disabled
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchDefault.Enabled
 
 data class PatchVariant(
     @StringRes val titleRes: Int,
@@ -10,30 +12,22 @@ data class PatchVariant(
 
 
 enum class KnownPatch(
-    /**
-     * Numeric display order in the patch options list. Lower = higher up.
-     *
-     * Convention: main patches use multiples of 10 (10, 20, 30, …). Patches
-     * that act as helpers/dependencies of a main patch get offsets adjacent to
-     * the requirer (e.g. main at 40, helpers at 41, 42, 43). DebugMenuUnlock
-     * is pinned to 100 to keep it at the bottom of the list.
-     */
-    val order: Int,
+    val order: Int, // Patch order in the UI List (lower = higher up) [Main Patches: multiples of 10 | Sub Patches: multiples of 1]
     val fileNames: List<String>,
     @StringRes val titleRes: Int,
     @StringRes val descRes: Int,
+    val default: PatchDefault, // Default state of the patch in the UI List (enabled/disabled)
     val requires: List<KnownPatch> = emptyList(),
     val disables: List<KnownPatch> = emptyList(),
     val variants: List<PatchVariant> = emptyList(),
     val defaultVariantIndex: Int = 0,
 ) {
-    // Dependency-first order (later refs need backward resolution).
-    // The `order` field controls display order; declaration order doesn't matter.
     LyricsDisableCover(
         order = 41,
         fileNames = listOf("lyrics-disable-cover.patch"),
         titleRes = R.string.patch_lyrics_disable_cover_title,
         descRes = R.string.patch_lyrics_disable_cover_desc,
+        default = Enabled,
     ),
     LyricsReplaceLyricsButton(
         order = 42,
@@ -43,12 +37,14 @@ enum class KnownPatch(
         ),
         titleRes = R.string.patch_lyrics_replace_button_title,
         descRes = R.string.patch_lyrics_replace_button_desc,
+        default = Enabled,
     ),
     LyricsReplaceShareButton(
         order = 43,
         fileNames = listOf("lyrics-replace-share-button.patch"),
         titleRes = R.string.patch_lyrics_replace_share_button_title,
         descRes = R.string.patch_lyrics_replace_share_button_desc,
+        default = Enabled,
     ),
     LyricsRlApi(
         order = 20,
@@ -58,30 +54,35 @@ enum class KnownPatch(
         ),
         titleRes = R.string.patch_lyrics_rl_api_title,
         descRes = R.string.patch_lyrics_rl_api_desc,
+        default = Disabled,
     ),
     LyricsKeepControlsVisible(
         order = 60,
         fileNames = listOf("lyrics-keep-controls-visible.patch"),
         titleRes = R.string.patch_lyrics_keep_controls_title,
         descRes = R.string.patch_lyrics_keep_controls_desc,
+        default = Enabled,
     ),
     PlayerBackdrop(
         order = 30,
         fileNames = listOf("player-backdrop.patch"),
         titleRes = R.string.patch_player_backdrop_title,
         descRes = R.string.patch_player_backdrop_desc,
+        default = Enabled,
     ),
     QualityBadgeColors(
         order = 36,
         fileNames = listOf("player-quality-badge-colors.patch"),
         titleRes = R.string.patch_quality_badge_colors_title,
         descRes = R.string.patch_quality_badge_colors_desc,
+        default = Enabled,
     ),
     PlayerOneHanded(
         order = 37,
         fileNames = listOf("player-one-handed.patch"),
         titleRes = R.string.patch_player_one_handed_title,
         descRes = R.string.patch_player_one_handed_desc,
+        default = Disabled,
     ),
     CoverEverywhere(
         order = 35,
@@ -92,12 +93,14 @@ enum class KnownPatch(
         ),
         titleRes = R.string.patch_cover_everywhere_title,
         descRes = R.string.patch_cover_everywhere_desc,
+        default = Disabled,
     ),
     DebugMenuUnlock(
         order = 100,
         fileNames = listOf("debug-menu-unlock.patch"),
         titleRes = R.string.patch_debug_menu_unlock_title,
         descRes = R.string.patch_debug_menu_unlock_desc,
+        default = Disabled,
     ),
     LyricsProgressPill(
         order = 40,
@@ -107,6 +110,7 @@ enum class KnownPatch(
         ),
         titleRes = R.string.patch_lyrics_progress_pill_title,
         descRes = R.string.patch_lyrics_progress_pill_desc,
+        default = Enabled,
         requires = listOf(LyricsDisableCover, LyricsReplaceLyricsButton, LyricsReplaceShareButton),
     ),
     MiniPlayerRedesign(
@@ -114,6 +118,7 @@ enum class KnownPatch(
         fileNames = emptyList(),
         titleRes = R.string.patch_mini_player_redesign_title,
         descRes = R.string.patch_mini_player_redesign_desc,
+        default = Disabled,
         defaultVariantIndex = 2,
         variants = listOf(
             PatchVariant(
@@ -135,6 +140,7 @@ enum class KnownPatch(
         fileNames = listOf("enable-legacy-ui.patch"),
         titleRes = R.string.patch_enable_legacy_ui_title,
         descRes = R.string.patch_enable_legacy_ui_desc,
+        default = Disabled,
         requires = listOf(DebugMenuUnlock),
         disables = listOf(
             LyricsDisableCover,
@@ -149,14 +155,7 @@ enum class KnownPatch(
         ),
     );
 
-    val allVariantFileNames: Set<String>
-        get() = variants.flatMapTo(mutableSetOf()) { it.fileNames }
-
     companion object {
-        /**
-         * Sorted by `order` ascending. Tie-breaks fall back to the first filename
-         * (alphabetical) so the order is always deterministic.
-         */
         val All: List<KnownPatch> = entries.sortedWith(
             compareBy({ it.order }, { it.fileNames.firstOrNull() ?: it.name })
         )

@@ -47,7 +47,7 @@ class PatchOptionsModel(
         debuggable = value
     }
 
-    var disabledPatches by mutableStateOf(prefilledOptions.disabledPatches)
+    var patchStates by mutableStateOf(prefilledOptions.patchStates)
         private set
 
     var selectedVariants by mutableStateOf(prefilledOptions.selectedVariants)
@@ -57,25 +57,10 @@ class PatchOptionsModel(
         ?.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
         ?: patch.defaultVariantIndex.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
 
-    fun isPatchEnabled(patch: KnownPatch): Boolean = if (patch.variants.isNotEmpty()) {
-        val v = patch.variants[variantIndex(patch)]
-        v.fileNames.isNotEmpty() && v.fileNames.none { it in disabledPatches }
-    } else {
-        patch.fileNames.isNotEmpty() && patch.fileNames.none { it in disabledPatches }
-    }
+    fun isPatchEnabled(patch: KnownPatch): Boolean =
+        patchStates[patch.name] ?: patch.default.isEnabled
 
     fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
-        if (patch.variants.isNotEmpty()) {
-            val all = patch.allVariantFileNames
-            val selected = patch.variants[variantIndex(patch)].fileNames.toSet()
-            disabledPatches = if (enabled) {
-                (disabledPatches + all) - selected
-            } else {
-                disabledPatches + all
-            }
-            return
-        }
-
         fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
             buildSet {
                 fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
@@ -95,16 +80,15 @@ class PatchOptionsModel(
             disableUnits = closure(patch) { p -> KnownPatch.All.filter { p in it.requires } }
         }
 
-        val enableFiles = enableUnits.flatMap { it.fileNames }.toSet()
-        val disableFiles = disableUnits.flatMap { it.fileNames }.toSet()
-        disabledPatches = (disabledPatches - enableFiles) + disableFiles
+        patchStates = patchStates.toMutableMap().apply {
+            enableUnits.forEach { this[it.name] = true }
+            disableUnits.forEach { this[it.name] = false }
+        }
     }
 
     fun selectVariant(patch: KnownPatch, index: Int) {
         if (patch.variants.isEmpty() || index !in patch.variants.indices) return
-        val wasOn = isPatchEnabled(patch)
         selectedVariants = selectedVariants + (patch.name to index)
-        if (wasOn) setPatchEnabled(patch, true)
     }
 
     fun lockState(patch: KnownPatch): PatchLock {
@@ -175,7 +159,7 @@ class PatchOptionsModel(
             debuggable = debuggable,
             customTidalApk = customTidalApk,
             customPatches = customPatches,
-            disabledPatches = disabledPatches,
+            patchStates = patchStates,
             selectedVariants = selectedVariants,
         )
     }
