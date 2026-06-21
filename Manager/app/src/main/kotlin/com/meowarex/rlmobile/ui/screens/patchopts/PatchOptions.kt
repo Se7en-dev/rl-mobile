@@ -32,28 +32,34 @@ data class PatchOptions(
      */
     val customPatches: PatchComponent? = null,
 
-    val disabledPatches: Set<String> = emptySet(),
+    val patchStates: Map<String, Boolean> = emptyMap(),
 
     val selectedVariants: Map<String, Int> = emptyMap(),
 ) : Parcelable {
-    companion object {
-        val Default: PatchOptions = run {
-            val miniPlayerFiles = KnownPatch.MiniPlayerRedesign.allVariantFileNames
-            val disabled = (
-                KnownPatch.DebugMenuUnlock.fileNames +
-                KnownPatch.EnableLegacyUi.fileNames +
-                KnownPatch.PlayerOneHanded.fileNames +
-                miniPlayerFiles
-            ).toSet()
 
-            PatchOptions(
-                appName = "TIDAL",
-                packageName = "com.aspiro.tidal",
-                debuggable = false,
-                customTidalApk = null,
-                customPatches = null,
-                disabledPatches = disabled,
-            )
+    fun isEnabled(patch: KnownPatch): Boolean =
+        patchStates[patch.name] ?: patch.default.isEnabled
+
+    fun disabledPatchFiles(): Set<String> = buildSet<String> {
+        for (patch in KnownPatch.All) {
+            val enabled = isEnabled(patch)
+            if (patch.variants.isEmpty()) {
+                if (!enabled) addAll(patch.fileNames)
+            } else {
+                val selected = (selectedVariants[patch.name] ?: patch.defaultVariantIndex)
+                    .coerceIn(0, patch.variants.lastIndex)
+                patch.variants.forEachIndexed { index, variant ->
+                    if (!enabled || index != selected) addAll(variant.fileNames)
+                }
+            }
         }
+    }
+
+    companion object {
+        val Default: PatchOptions = PatchOptions(
+            appName = "TIDAL",
+            packageName = "com.aspiro.tidal",
+            debuggable = false,
+        )
     }
 }

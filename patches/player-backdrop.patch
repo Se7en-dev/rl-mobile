@@ -1,7 +1,7 @@
 # rl-locals: com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali e( 71
 --- a/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
-@@ -4172,6 +4172,133 @@
+@@ -4172,6 +4172,148 @@
 
      invoke-static {v5, v3, v4}, Landroidx/compose/runtime/Updater;->set-impl(Landroidx/compose/runtime/Composer;Ljava/lang/Object;Lyl0/p;)V
 
@@ -29,15 +29,30 @@
 +
 +    move-result-object v4    # current item
 +
-+    instance-of v6, v4, Lcom/tidal/android/feature/playerscreen/ui/c$a;    # only album covers
++    instance-of v6, v4, Lcom/tidal/android/feature/playerscreen/ui/c$a;    # still album cover?
 +
-+    if-eqz v6, :radiant_skip    # skip non-albums
++    if-eqz v6, :radiant_try_animated    # if not, try animated album cover
 +
 +    check-cast v4, Lcom/tidal/android/feature/playerscreen/ui/c$a;    # narrow type
 +
 +    iget v5, v4, Lcom/tidal/android/feature/playerscreen/ui/c$a;->b:I    # album id
 +
 +    iget-object v4, v4, Lcom/tidal/android/feature/playerscreen/ui/c$a;->c:Ljava/lang/String;    # cover uuid
++
++    goto :radiant_have_cover    # cover resolved
++
++    :radiant_try_animated    # animated album cover (c$b) shares albumId/cover layout
++    instance-of v6, v4, Lcom/tidal/android/feature/playerscreen/ui/c$b;    # animated album cover?
++
++    if-eqz v6, :radiant_skip    # neither -> skip (music video / unknown)
++
++    check-cast v4, Lcom/tidal/android/feature/playerscreen/ui/c$b;    # narrow type
++
++    iget v5, v4, Lcom/tidal/android/feature/playerscreen/ui/c$b;->b:I    # album id
++
++    iget-object v4, v4, Lcom/tidal/android/feature/playerscreen/ui/c$b;->c:Ljava/lang/String;    # still cover uuid (blur this)
++
++    :radiant_have_cover    # v5 = album id, v4 = cover uuid
 +
 +    new-instance v6, Lcom/tidal/android/feature/playerscreen/ui/composables/n0;    # cover request lambda
 +

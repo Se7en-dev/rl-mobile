@@ -41,6 +41,7 @@ class SmaliPatchStep(
 
         val patches = mutableListOf<LoadedPatch>()
         val localsBumps = mutableMapOf<Pair<String, String>, Int>()
+        val disabledFiles = options.disabledPatchFiles()
 
         // Load and parse all the patches from the smali archive.
         container.log("Loading patches from smali patch archive: ${patchesZip.absolutePath}")
@@ -71,7 +72,7 @@ class SmaliPatchStep(
                 if (!patchFile.endsWith(".patch")) continue
 
                 val basename = patchFile.substringAfterLast('/')
-                if (basename in options.disabledPatches) {
+                if (basename in disabledFiles) {
                     container.log("Skipping disabled patch $patchFile")
                     continue
                 }
