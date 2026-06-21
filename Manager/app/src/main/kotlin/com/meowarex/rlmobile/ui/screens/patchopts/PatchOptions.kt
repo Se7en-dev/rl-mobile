@@ -42,6 +42,7 @@ data class PatchOptions(
             val disabled = (
                 KnownPatch.DebugMenuUnlock.fileNames +
                 KnownPatch.EnableLegacyUi.fileNames +
+                KnownPatch.PlayerOneHanded.fileNames +
                 miniPlayerFiles
             ).toSet()
 
