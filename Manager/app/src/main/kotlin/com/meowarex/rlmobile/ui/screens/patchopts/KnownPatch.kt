@@ -169,6 +169,8 @@ enum class KnownPatch(
                 extensionFileNames = listOf(
                     "radiant/MiniPlayerTrackGestures.smali",
                     "radiant/MiniPlayerTrackGestures\$Gesture.smali",
+                    "radiant/MiniPlayerTrackGestures\$OffsetLayer.smali",
+                    "radiant/MiniPlayerTrackGestures\$ResetAnimator.smali",
                     "com/tidal/android/feature/appscaffold/ui/q\$c.smali",
                 ),
             ),

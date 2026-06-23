@@ -468,6 +468,14 @@
     return v0
 .end method
 
+.method public static isAnyDragging()Z
+    .locals 1
+
+    sget-boolean v0, Lradiant/MiniPlayerGestures;->b:Z
+
+    return v0
+.end method
+
 .method public static hasMiniPlayerMedia()Z
     .locals 1
 
