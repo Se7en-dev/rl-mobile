@@ -1,9 +1,6 @@
 --- a/com/tidal/android/feature/appscaffold/ui/composable/i.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/i.smali
-@@ -2829,31 +2829,10 @@
- 
-     move-result-object v0
- 
+@@ -2832,27 +2832,5 @@
 -    .line 150
 -    sget-object v8, Lkotlin/u;->a:Lkotlin/u;
 -
@@ -34,7 +31,6 @@
 +    invoke-static {v0, v6, v8}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # attach swipe up listener
  
      move-result-object v0
- 
 @@ -2427,6 +2406,12 @@
      move-object/from16 v16, v9
 
