@@ -385,6 +385,18 @@
     return-object p0
 .end method
 
+.method public static textFeedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+    .locals 1
+
+    sget-object v0, Lradiant/MiniPlayerTrackGestures$TextDraw;->INSTANCE:Lradiant/MiniPlayerTrackGestures$TextDraw; # text clip on right only
+
+    invoke-static {p0, v0}, Landroidx/compose/ui/draw/DrawModifierKt;->drawWithContent(Landroidx/compose/ui/Modifier;Lyl0/l;)Landroidx/compose/ui/Modifier;
+
+    move-result-object p0
+
+    return-object p0
+.end method
+
 .method public static onRenderedItem(Ljava/lang/Object;)V
     .locals 2
 

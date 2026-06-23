@@ -171,6 +171,7 @@ enum class KnownPatch(
                     "radiant/MiniPlayerTrackGestures\$Gesture.smali",
                     "radiant/MiniPlayerTrackGestures\$OffsetLayer.smali",
                     "radiant/MiniPlayerTrackGestures\$ResetAnimator.smali",
+                    "radiant/MiniPlayerTrackGestures\$TextDraw.smali",
                     "com/tidal/android/feature/appscaffold/ui/q\$c.smali",
                 ),
             ),

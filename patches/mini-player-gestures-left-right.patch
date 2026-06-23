@@ -30,7 +30,7 @@
 @@ -2032,3 +2038,5 @@
      move-result-object v4
 -
-+    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->feedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move title/artist with horizontal swipe
++    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->textFeedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move title/artist
 +    move-result-object v4
 +
      .line 72
