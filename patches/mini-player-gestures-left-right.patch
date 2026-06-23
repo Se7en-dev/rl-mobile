@@ -1,0 +1,83 @@
+--- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
+@@ -1746,6 +1746,10 @@
+     invoke-static {v9, v10, v15, v6, v8}, Landroidx/compose/foundation/layout/PaddingKt;->padding-qDBjuR0(Landroidx/compose/ui/Modifier;FFFF)Landroidx/compose/ui/Modifier;
+ 
+     move-result-object v6
++
++    invoke-static {v6, v1}, Lradiant/MiniPlayerTrackGestures;->trackModifier(Landroidx/compose/ui/Modifier;Lyl0/l;)Landroidx/compose/ui/Modifier; # attach horizontal swipe listener
++
++    move-result-object v6
+ 
+     .line 38
+     sget-object v21, Landroidx/compose/ui/Alignment;->Companion:Landroidx/compose/ui/Alignment$Companion;
+--- a/com/tidal/android/feature/appscaffold/ui/MiniPlayerViewModel.smali
++++ b/com/tidal/android/feature/appscaffold/ui/MiniPlayerViewModel.smali
+@@ -816,10 +816,10 @@
+     .line 111
+     .line 112
+     .line 113
+-    move-result p1
++    move-result v0
+ 
+     .line 114
+-    if-eqz p1, :cond_f
++    if-eqz v0, :cond_f
+ 
+     .line 115
+     .line 116
+@@ -997,11 +997,32 @@
+     :cond_e
+     return-void
+ 
+-    .line 195
+     :cond_f
++    sget-object v0, Lcom/tidal/android/feature/appscaffold/ui/q$c;->a:Lcom/tidal/android/feature/appscaffold/ui/q$c;
++
++    invoke-virtual {p1, v0}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
++
++    move-result p1
++
++    if-eqz p1, :unknown_event
++
++    invoke-interface {v3}, Lei/e;->canSkipToPreviousOrRewind()Z
++
++    move-result p1
++
++    if-eqz p1, :previous_done
++
++    const/4 p1, 0x0
++
++    invoke-interface {v3, p1}, Lei/e;->h(Z)V    # false = previous/rewind
++
++    :previous_done
++    return-void
++
++    :unknown_event
+     invoke-static {}, Landroidx/compose/ui/graphics/y;->b()V
+ 
+     .line 196
+     .line 197
+     .line 198
+     return-void
+--- a/com/tidal/android/feature/appscaffold/ui/composable/e.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/e.smali
+@@ -75,6 +75,18 @@
+     .line 22
+     :pswitch_0
++    invoke-static {}, Lradiant/MiniPlayerTrackGestures;->consumeTapOpenSuppression()Z    # prevent tap open after horizontal swipe
++
++    move-result v0
++
++    if-eqz v0, :continue_open
++
++    sget-object v0, Lkotlin/u;->a:Lkotlin/u;
++
++    return-object v0
++
++    :continue_open
++
+     iget-object v0, p0, Lcom/tidal/android/feature/appscaffold/ui/composable/e;->b:Ljava/lang/Object;
+ 
+     .line 23
+     .line 24
