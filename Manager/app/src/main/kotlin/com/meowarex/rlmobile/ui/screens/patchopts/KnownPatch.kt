@@ -135,6 +135,13 @@ enum class KnownPatch(
             ),
         ),
     ),
+    MiniPlayerDynamicBackground(
+        order = 51,
+        fileNames = listOf("mini-player-dynamic-bg.patch"),
+        titleRes = R.string.patch_mini_player_dynamic_bg_title,
+        descRes = R.string.patch_mini_player_dynamic_bg_desc,
+        default = Disabled,
+    ),
     EnableLegacyUi(
         order = 10,
         fileNames = listOf("enable-legacy-ui.patch"),
@@ -151,6 +158,7 @@ enum class KnownPatch(
             PlayerBackdrop,
             QualityBadgeColors,
             LyricsProgressPill,
+            MiniPlayerDynamicBackground,
             CoverEverywhere,
         ),
     );
