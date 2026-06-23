@@ -148,7 +148,7 @@ enum class KnownPatch(
         ),
     ),
     MiniPlayerGestures(
-        order = 51,
+        order = 52,
         fileNames = listOf("mini-player-gestures.patch"),
         extensionFileNames = listOf(
             "radiant/MiniPlayerGestures.smali",
