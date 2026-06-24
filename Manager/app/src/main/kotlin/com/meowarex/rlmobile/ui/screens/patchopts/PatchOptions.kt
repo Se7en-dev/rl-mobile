@@ -40,6 +40,9 @@ data class PatchOptions(
     fun isEnabled(patch: KnownPatch): Boolean =
         patchStates[patch.name] ?: patch.default.isEnabled
 
+    fun isEnabled(subOption: PatchSubOption): Boolean =
+        patchStates[subOption.key] ?: subOption.default.isEnabled
+
     fun disabledPatchFiles(): Set<String> = buildSet<String> {
         for (patch in KnownPatch.All) {
             val enabled = isEnabled(patch)
@@ -51,6 +54,35 @@ data class PatchOptions(
                 patch.variants.forEachIndexed { index, variant ->
                     if (!enabled || index != selected) addAll(variant.fileNames)
                 }
+            }
+            for (subOption in patch.subOptions) {
+                if (!enabled || !isEnabled(subOption)) addAll(subOption.fileNames)
+            }
+        }
+    }
+
+    fun knownExtensionFiles(): Set<String> = buildSet {
+        for (patch in KnownPatch.All) {
+            addAll(patch.extensionFileNames)
+            patch.variants.forEach { addAll(it.extensionFileNames) }
+            patch.subOptions.forEach { addAll(it.extensionFileNames) }
+        }
+    }
+
+    fun enabledExtensionFiles(): Set<String> = buildSet {
+        for (patch in KnownPatch.All) {
+            if (!isEnabled(patch)) continue
+
+            addAll(patch.extensionFileNames)
+
+            if (patch.variants.isNotEmpty()) {
+                val selected = (selectedVariants[patch.name] ?: patch.defaultVariantIndex)
+                    .coerceIn(0, patch.variants.lastIndex)
+                addAll(patch.variants[selected].extensionFileNames)
+            }
+
+            for (subOption in patch.subOptions) {
+                if (isEnabled(subOption)) addAll(subOption.extensionFileNames)
             }
         }
     }

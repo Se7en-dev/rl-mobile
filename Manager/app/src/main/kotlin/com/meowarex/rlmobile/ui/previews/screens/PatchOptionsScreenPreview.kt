@@ -40,6 +40,8 @@ private fun PatchOptionsScreenPreview(
             patchLockState = { PatchLock.Free },
             variantIndex = { 0 },
             onSelectVariant = { _, _ -> },
+            isSubOptionEnabled = { _, _ -> true },
+            onToggleSubOption = { _, _, _ -> },
             isConfigValid = parameters.isConfigValid,
             onInstall = {},
         )

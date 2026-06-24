@@ -8,12 +8,23 @@ import com.meowarex.rlmobile.ui.screens.patchopts.PatchDefault.Enabled
 data class PatchVariant(
     @StringRes val titleRes: Int,
     val fileNames: List<String>,
+    val extensionFileNames: List<String> = emptyList(),
+)
+
+data class PatchSubOption(
+    val key: String,
+    @StringRes val titleRes: Int,
+    @StringRes val descRes: Int,
+    val fileNames: List<String>,
+    val default: PatchDefault,
+    val extensionFileNames: List<String> = emptyList(),
 )
 
 
 enum class KnownPatch(
     val order: Int, // Patch order in the UI List (lower = higher up) [Main Patches: multiples of 10 | Sub Patches: multiples of 1]
     val fileNames: List<String>,
+    val extensionFileNames: List<String> = emptyList(),
     @StringRes val titleRes: Int,
     @StringRes val descRes: Int,
     val default: PatchDefault, // Default state of the patch in the UI List (enabled/disabled)
@@ -21,6 +32,7 @@ enum class KnownPatch(
     val disables: List<KnownPatch> = emptyList(),
     val variants: List<PatchVariant> = emptyList(),
     val defaultVariantIndex: Int = 0,
+    val subOptions: List<PatchSubOption> = emptyList(),
 ) {
     LyricsDisableCover(
         order = 41,
@@ -135,6 +147,36 @@ enum class KnownPatch(
             ),
         ),
     ),
+    MiniPlayerGestures(
+        order = 52,
+        fileNames = listOf("mini-player-gestures.patch"),
+        extensionFileNames = listOf(
+            "radiant/MiniPlayerGestures.smali",
+            "radiant/MiniPlayerGestures\$Gesture.smali",
+            "radiant/MiniPlayerGestures\$RootGesture.smali",
+            "radiant/MiniPlayerGestures\$ApplyPending.smali",
+        ),
+        titleRes = R.string.patch_mini_player_gestures_title,
+        descRes = R.string.patch_mini_player_gestures_desc,
+        default = Enabled,
+        subOptions = listOf(
+            PatchSubOption(
+                key = "MiniPlayerGestures.LeftRight",
+                titleRes = R.string.patch_mini_player_left_right_gestures_title,
+                descRes = R.string.patch_mini_player_left_right_gestures_desc,
+                fileNames = listOf("mini-player-gestures-left-right.patch"),
+                default = Disabled,
+                extensionFileNames = listOf(
+                    "radiant/MiniPlayerTrackGestures.smali",
+                    "radiant/MiniPlayerTrackGestures\$Gesture.smali",
+                    "radiant/MiniPlayerTrackGestures\$OffsetLayer.smali",
+                    "radiant/MiniPlayerTrackGestures\$ResetAnimator.smali",
+                    "radiant/MiniPlayerTrackGestures\$TextDraw.smali",
+                    "com/tidal/android/feature/appscaffold/ui/q\$c.smali",
+                ),
+            ),
+        ),
+    ),
     MiniPlayerDynamicBackground(
         order = 51,
         fileNames = listOf("mini-player-dynamic-bg.patch"),
@@ -160,6 +202,7 @@ enum class KnownPatch(
             LyricsProgressPill,
             MiniPlayerDynamicBackground,
             CoverEverywhere,
+            MiniPlayerGestures,
         ),
     );
 

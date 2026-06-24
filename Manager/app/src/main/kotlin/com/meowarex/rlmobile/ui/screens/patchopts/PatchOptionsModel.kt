@@ -60,6 +60,14 @@ class PatchOptionsModel(
     fun isPatchEnabled(patch: KnownPatch): Boolean =
         patchStates[patch.name] ?: patch.default.isEnabled
 
+    fun isSubOptionEnabled(patch: KnownPatch, subOption: PatchSubOption): Boolean =
+        isPatchEnabled(patch) && (patchStates[subOption.key] ?: subOption.default.isEnabled)
+
+    fun setSubOptionEnabled(patch: KnownPatch, subOption: PatchSubOption, enabled: Boolean) {
+        if (subOption !in patch.subOptions) return
+        patchStates = patchStates + (subOption.key to enabled)
+    }
+
     fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
         fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
             buildSet {
