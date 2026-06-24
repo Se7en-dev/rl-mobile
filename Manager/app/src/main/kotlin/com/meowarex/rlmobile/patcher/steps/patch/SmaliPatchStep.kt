@@ -8,7 +8,9 @@ import com.meowarex.rlmobile.patcher.steps.base.IDexProvider
 import com.meowarex.rlmobile.patcher.steps.base.Step
 import com.meowarex.rlmobile.patcher.steps.download.CopyDependenciesStep
 import com.meowarex.rlmobile.patcher.steps.download.DownloadPatchesStep
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchManifest
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptions
+import com.meowarex.rlmobile.ui.screens.patchopts.builtinPatchSpecs
 import com.android.tools.smali.baksmali.Baksmali
 import com.android.tools.smali.baksmali.BaksmaliOptions
 import com.android.tools.smali.dexlib2.Opcodes
@@ -19,6 +21,7 @@ import com.github.diamondminer88.zip.ZipReader
 import com.github.difflib.DiffUtils
 import com.github.difflib.UnifiedDiffUtils
 import com.github.difflib.patch.Patch
+import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.*
@@ -27,6 +30,7 @@ class SmaliPatchStep(
     private val options: PatchOptions,
 ) : Step(), IDexProvider, KoinComponent {
     private val paths: PathManager by inject()
+    private val json: Json by inject()
 
     override val group = StepGroup.Patch
     override val localizedName = R.string.patch_step_patch_smali
@@ -41,7 +45,29 @@ class SmaliPatchStep(
 
         val patches = mutableListOf<LoadedPatch>()
         val localsBumps = mutableMapOf<Pair<String, String>, Int>()
-        val disabledFiles = options.disabledPatchFiles()
+
+        // The patch list/options metadata lives in the zip's manifest.json
+        val manifestSpecs = try {
+            ZipReader(patchesZip).use { it.openEntry("manifest.json")?.read() }
+                ?.let { json.decodeFromString(PatchManifest.serializer(), it.decodeToString()).patches }
+                ?.takeIf { it.isNotEmpty() }
+        } catch (t: Throwable) {
+            container.log("Failed to parse manifest.json (${t.message}); using built-in patch specs")
+            null
+        }
+        val specs = manifestSpecs ?: builtinPatchSpecs { "" }
+        container.log(
+            "Loaded ${specs.size} patch specs from " +
+                if (manifestSpecs != null) "manifest.json" else "built-in list"
+        )
+
+        val disabledFiles = options.disabledPatchFiles(specs)
+        val knownExtensionFiles = options.knownExtensionFiles(specs)
+        val enabledExtensionFiles = options.enabledExtensionFiles(specs)
+        val substitutions = options.smaliSubstitutions(specs)
+        if (substitutions.isNotEmpty()) {
+            container.log("Patch option substitutions: ${substitutions.entries.joinToString { "${it.key}=${it.value}" }}")
+        }
 
         // Load and parse all the patches from the smali archive.
         container.log("Loading patches from smali patch archive: ${patchesZip.absolutePath}")
@@ -54,6 +80,11 @@ class SmaliPatchStep(
 
                 if (patchFile.endsWith(".smali") && patchFile.startsWith("extension/")) {
                     val relative = patchFile.removePrefix("extension/")
+                    // Only bundle helper smali patch/variant/sub-option is enabled
+                    if (relative in knownExtensionFiles && relative !in enabledExtensionFiles) {
+                        container.log("Skipping disabled extension smali: $relative")
+                        continue
+                    }
                     val out = smaliDir.resolve(relative)
                     // Guard against zip-slip: a crafted entry could otherwise escape smaliDir.
                     val baseCanonical = smaliDir.canonicalPath + File.separator
@@ -77,11 +108,34 @@ class SmaliPatchStep(
                     continue
                 }
 
-                val lines = zip.openEntry(patchFile)!!.read()
+                var patchText = zip.openEntry(patchFile)!!.read()
                     .decodeToString()
                     .replace("\r\n", "\n") // Replace CRLF endings with LF
                     .trimEnd { it == '\n' } // Remove trailing new lines
-                    .split('\n')
+
+                // Bake advanced option values into the patch
+                for ((token, value) in substitutions) {
+                    if (patchText.contains(token)) {
+                        patchText = patchText.replace(token, value)
+                        container.log("Applied substitution $token -> $value in $patchFile")
+                    }
+                }
+
+                // Fail fast
+                UNRESOLVED_TOKEN.find(patchText)?.let { match ->
+                    throw Error("Unresolved option placeholder ${match.value} in $patchFile")
+                }
+
+                // Skip a patch that references a helper class which won't be bundled
+                val missingHelper = (knownExtensionFiles - enabledExtensionFiles).firstOrNull { rel ->
+                    patchText.contains("L${rel.removeSuffix(".smali")};")
+                }
+                if (missingHelper != null) {
+                    container.log("Skipping $patchFile: references gated-off helper class $missingHelper")
+                    continue
+                }
+
+                val lines = patchText.split('\n')
 
                 try {
                     for (directive in lines) {
@@ -321,6 +375,7 @@ class SmaliPatchStep(
 
     private companion object {
         val LOCALS_DIRECTIVE = Regex("""^#\s*rl-locals:\s+(\S+)\s+(\S+)\s+(\d+)\s*$""")
+        val UNRESOLVED_TOKEN = Regex("""__RL_[A-Z0-9_]+__""")
     }
 
     /**

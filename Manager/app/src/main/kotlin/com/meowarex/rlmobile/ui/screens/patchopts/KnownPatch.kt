@@ -8,12 +8,14 @@ import com.meowarex.rlmobile.ui.screens.patchopts.PatchDefault.Enabled
 data class PatchVariant(
     @StringRes val titleRes: Int,
     val fileNames: List<String>,
+    val extensionFiles: List<String> = emptyList(),
 )
 
 
 enum class KnownPatch(
     val order: Int, // Patch order in the UI List (lower = higher up) [Main Patches: multiples of 10 | Sub Patches: multiples of 1]
     val fileNames: List<String>,
+    val extensionFiles: List<String> = emptyList(),
     @StringRes val titleRes: Int,
     @StringRes val descRes: Int,
     val default: PatchDefault, // Default state of the patch in the UI List (enabled/disabled)
@@ -21,6 +23,7 @@ enum class KnownPatch(
     val disables: List<KnownPatch> = emptyList(),
     val variants: List<PatchVariant> = emptyList(),
     val defaultVariantIndex: Int = 0,
+    val advancedOptions: List<PatchOption> = emptyList(),
 ) {
     LyricsDisableCover(
         order = 41,
@@ -69,6 +72,30 @@ enum class KnownPatch(
         titleRes = R.string.patch_player_backdrop_title,
         descRes = R.string.patch_player_backdrop_desc,
         default = Enabled,
+        advancedOptions = listOf(
+            PatchOption.Slider(
+                key = "blur_strength",
+                titleRes = R.string.patch_opt_backdrop_blur_title,
+                descRes = R.string.patch_opt_backdrop_blur_desc,
+                default = 50f,
+                valueRange = 0f..100f,
+                steps = 19, // dots every 5% (0,5,…,100); snap only when locked
+                displayAsPercent = true,
+                token = "RL_BLUR_BITS",
+                encode = SmaliEncode(EncodeKind.FloatBits, scale = 1.8f),
+            ),
+            PatchOption.Slider(
+                key = "dimming",
+                titleRes = R.string.patch_opt_backdrop_dimming_title,
+                descRes = R.string.patch_opt_backdrop_dimming_desc,
+                default = 50f, // 50% == the original -0x80000000
+                valueRange = 0f..100f,
+                steps = 19, // dots every 5%
+                displayAsPercent = true,
+                token = "RL_SCRIM_ARGB",
+                encode = SmaliEncode(EncodeKind.ArgbAlpha),
+            ),
+        ),
     ),
     QualityBadgeColors(
         order = 36,
@@ -121,17 +148,71 @@ enum class KnownPatch(
         default = Disabled,
         defaultVariantIndex = 2,
         variants = listOf(
-            PatchVariant(
+            PatchVariant( // 0: Floating — stock rounded pill (no patch; the progress border is an option)
                 titleRes = R.string.patch_mini_player_variant_floating_title,
-                fileNames = listOf("mini-player-floating.patch"),
+                fileNames = emptyList(),
             ),
-            PatchVariant(
+            PatchVariant( // 1: Grey — square, theme background (shown as "Legacy" when Dynamic BG is on)
                 titleRes = R.string.patch_mini_player_variant_square_grey_title,
                 fileNames = listOf("mini-player-grey.patch"),
             ),
-            PatchVariant(
+            PatchVariant( // 2: Black — square, forced black background (hidden when Dynamic BG is on)
                 titleRes = R.string.patch_mini_player_variant_square_black_title,
                 fileNames = listOf("mini-player-black.patch"),
+            ),
+        ),
+        advancedOptions = listOf(
+            PatchOption.Toggle(
+                key = "dynamic_bg",
+                titleRes = R.string.patch_mini_player_dynamic_bg_title,
+                descRes = R.string.patch_mini_player_dynamic_bg_desc,
+                default = false,
+                inline = true,
+                fileNames = listOf("mini-player-dynamic-bg.patch"),
+                extensionFiles = listOf("radiant/MiniPlayerBackground.smali"),
+                hidesVariants = listOf(2),
+                relabelVariants = mapOf(1 to R.string.patch_mini_player_variant_legacy_title),
+            ),
+            // Animated progress border around the floating pill
+            PatchOption.Toggle(
+                key = "border",
+                titleRes = R.string.patch_mini_player_border_title,
+                descRes = R.string.patch_mini_player_border_desc,
+                default = false,
+                requiresVariant = 0,
+                fileNames = listOf("mini-player-floating-border.patch"),
+                extensionFiles = listOf("radiant/MiniSeekerFloating.smali"),
+            ),
+            // Swipe up to open the full player
+            PatchOption.Toggle(
+                key = "gestures",
+                titleRes = R.string.patch_mini_player_gestures_title,
+                descRes = R.string.patch_mini_player_gestures_desc,
+                default = true,
+                fileNames = listOf("mini-player-gestures.patch"),
+                extensionFiles = listOf(
+                    "radiant/MiniPlayerGestures.smali",
+                    "radiant/MiniPlayerGestures\$Gesture.smali",
+                    "radiant/MiniPlayerGestures\$RootGesture.smali",
+                    "radiant/MiniPlayerGestures\$ApplyPending.smali",
+                ),
+            ),
+            // Swipe left/right to skip
+            PatchOption.Toggle(
+                key = "next_prev",
+                titleRes = R.string.patch_mini_player_left_right_gestures_title,
+                descRes = R.string.patch_mini_player_left_right_gestures_desc,
+                default = false,
+                requiresOption = "gestures",
+                fileNames = listOf("mini-player-gestures-left-right.patch"),
+                extensionFiles = listOf(
+                    "radiant/MiniPlayerTrackGestures.smali",
+                    "radiant/MiniPlayerTrackGestures\$Gesture.smali",
+                    "radiant/MiniPlayerTrackGestures\$OffsetLayer.smali",
+                    "radiant/MiniPlayerTrackGestures\$ResetAnimator.smali",
+                    "radiant/MiniPlayerTrackGestures\$TextDraw.smali",
+                    "com/tidal/android/feature/appscaffold/ui/q\$c.smali",
+                ),
             ),
         ),
     ),
@@ -152,6 +233,7 @@ enum class KnownPatch(
             QualityBadgeColors,
             LyricsProgressPill,
             CoverEverywhere,
+            MiniPlayerRedesign,
         ),
     );
 

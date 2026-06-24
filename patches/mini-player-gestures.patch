@@ -1,0 +1,114 @@
+--- a/com/tidal/android/feature/appscaffold/ui/composable/i.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/i.smali
+@@ -2832,27 +2832,5 @@
+-    .line 150
+-    sget-object v8, Lkotlin/u;->a:Lkotlin/u;
+-
+-    .line 151
+-    invoke-interface {v15}, Landroidx/compose/runtime/Composer;->rememberedValue()Ljava/lang/Object;
+-
+-    move-result-object v10
+-
+-    .line 152
+-    invoke-virtual/range {v22 .. v22}, Landroidx/compose/runtime/Composer$Companion;->getEmpty()Ljava/lang/Object;
+-
+-    move-result-object v11
+-
+-    if-ne v10, v11, :cond_48
+-
+-    .line 153
+-    sget-object v10, Lcom/tidal/android/feature/appscaffold/ui/composable/AppScaffoldKt$AppScaffold$3$2$1$1;->a:Lcom/tidal/android/feature/appscaffold/ui/composable/AppScaffoldKt$AppScaffold$3$2$1$1;
+-
+-    invoke-interface {v15, v10}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V
+-
+-    .line 154
+-    :cond_48
+-    check-cast v10, Landroidx/compose/ui/input/pointer/PointerInputEventHandler;
+-
+-    invoke-static {v0, v8, v10}, Landroidx/compose/ui/input/pointer/SuspendingPointerInputFilterKt;->pointerInput(Landroidx/compose/ui/Modifier;Ljava/lang/Object;Landroidx/compose/ui/input/pointer/PointerInputEventHandler;)Landroidx/compose/ui/Modifier;
++    move-object/from16 v8, v25    # SheetState from AppScaffold
++
++    invoke-static {v0, v6, v8}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # attach swipe up listener
+ 
+     move-result-object v0
+@@ -2427,6 +2406,12 @@
+     move-object/from16 v16, v9
+
+     .line 99
++    move-object/from16 v9, v25    # same SheetState used by the modal sheet
++
++    invoke-static {v5, v6, v9}, Lradiant/MiniPlayerGestures;->rootModifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # continue drag after player recomposition
++
++    move-result-object v5
++
+     invoke-static {v15, v5}, Landroidx/compose/ui/ComposedModifierKt;->materializeModifier(Landroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+
+     move-result-object v9
+
+--- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
++++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
+@@ -1243,5 +1243,21 @@
+     invoke-virtual {v0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
+ 
+     iget-object v3, v0, Lcom/tidal/android/feature/appscaffold/ui/s;->c:Lcom/tidal/android/feature/appscaffold/ui/MiniPlayerContract$PlayState;
++
++    iget-object v5, v0, Lcom/tidal/android/feature/appscaffold/ui/s;->a:Lcom/tidal/android/feature/appscaffold/ui/MiniPlayerContract$ItemType;    # currently rendered mini player media type
++
++    sget-object v6, Lcom/tidal/android/feature/appscaffold/ui/MiniPlayerContract$ItemType;->Unknown:Lcom/tidal/android/feature/appscaffold/ui/MiniPlayerContract$ItemType;    # Unknown = no media playing. other media types : Track, Video.
++
++    if-ne v5, v6, :rl_has_media    # used to prevent swipe up when nothing is playing
++
++    const/4 v5, 0x0
++
++    goto :rl_set_media
++
++    :rl_has_media
++    const/4 v5, 0x1
++
++    :rl_set_media
++    invoke-static {v5}, Lradiant/MiniPlayerGestures;->setHasMiniPlayerMedia(Z)V
+ 
+     invoke-virtual {v1}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
+ 
+--- a/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
++++ b/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
+@@ -210,8 +210,10 @@
+     .line 22
+     .line 23
+     .line 24
+     iget-object p1, p0, Landroidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1;->$sheetState:Landroidx/compose/material3/SheetState;
+-
++    invoke-static {p1}, Lradiant/MiniPlayerGestures;->suppressAutoShow(Landroidx/compose/material3/SheetState;)Z    # avoid Material3 show() taking over manual drag
++    move-result v1
++    if-nez v1, :skip_show
+     .line 25
+     .line 26
+     iput v2, p0, Landroidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1;->label:I
+@@ -231,7 +233,7 @@
+     .line 33
+     .line 34
+     return-object v0
+-
++    :skip_show
+     .line 35
+     :cond_2
+     :goto_0
+--- a/androidx/compose/material3/ModalBottomSheetKt.smali
++++ b/androidx/compose/material3/ModalBottomSheetKt.smali
+@@ -1370,3 +1370,6 @@
+     .line 34
+     :cond_47
++    move-object v14, v12
++    check-cast v14, Lyl0/l;
++    invoke-static {v13, v14}, Lradiant/MiniPlayerGestures;->setSettleCallback(Landroidx/compose/material3/SheetState;Lyl0/l;)V    # reuse native settle animation on release
+     move-object/from16 v32, v12
+--- a/androidx/compose/material3/SheetDefaultsKt.smali
++++ b/androidx/compose/material3/SheetDefaultsKt.smali
+@@ -100,6 +100,5 @@
+     .line 16
+-    const/16 v3, 0x12c
+-
++    const/16 v3, 0x64    # 100ms
+     .line 17
+     .line 18
+     const/4 v4, 0x0

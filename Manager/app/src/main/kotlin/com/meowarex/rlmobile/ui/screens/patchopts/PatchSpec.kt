@@ -1,0 +1,268 @@
+package com.meowarex.rlmobile.ui.screens.patchopts
+
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlin.math.roundToInt
+
+@Serializable
+data class PatchManifest(
+    val version: Int = 1,
+    val patches: List<PatchSpec> = emptyList(),
+)
+
+@Immutable
+@Serializable
+data class PatchSpec(
+    val id: String,
+    val order: Int = 0,
+    val fileNames: List<String> = emptyList(),
+    val extensionFiles: List<String> = emptyList(),
+    val title: String,
+    val description: String = "",
+    @SerialName("default") val defaultEnabled: Boolean = false,
+    /** ids of patches that get force-enabled when this one is enabled. */
+    val requires: List<String> = emptyList(),
+    /** ids of patches that get force-disabled when this one is enabled. */
+    val disables: List<String> = emptyList(),
+    val variants: List<VariantSpec> = emptyList(),
+    val defaultVariantIndex: Int = 0,
+    val advancedOptions: List<OptionSpec> = emptyList(),
+)
+
+@Immutable
+@Serializable
+data class VariantSpec(
+    val title: String,
+    val fileNames: List<String> = emptyList(),
+    val extensionFiles: List<String> = emptyList(),
+)
+
+/** A single advanced option. Discriminated by `"type"` in JSON. */
+@Serializable
+sealed interface OptionSpec {
+    val key: String
+    val title: String
+    val description: String
+
+    @Immutable
+    @Serializable
+    @SerialName("toggle")
+    data class Toggle(
+        override val key: String,
+        override val title: String,
+        override val description: String = "",
+        val default: Boolean = false,
+        /** Patch files applied only while this toggle is on (and its patch is enabled). */
+        val fileNames: List<String> = emptyList(),
+        /** Helper smali extracted only while this toggle is on. */
+        val extensionFiles: List<String> = emptyList(),
+        /** Render inline beneath the variant selector instead of inside the advanced sheet. */
+        val inline: Boolean = false,
+        /** Greyed out (with the lock dialog) unless this variant index is the selected one. */
+        val requiresVariant: Int? = null,
+        /** Greyed out unless the sibling option with this key is currently on. */
+        val requiresOption: String? = null,
+        /** Variant indices hidden from the picker while this toggle is on. */
+        val hidesVariants: List<Int> = emptyList(),
+        /** Variant title overrides (index -> title) applied while this toggle is on. */
+        val relabelVariants: Map<Int, String> = emptyMap(),
+    ) : OptionSpec
+
+    @Immutable
+    @Serializable
+    @SerialName("slider")
+    data class Slider(
+        override val key: String,
+        override val title: String,
+        override val description: String = "",
+        val default: Float = 0f,
+        val min: Float = 0f,
+        val max: Float = 100f,
+        val steps: Int = 0,
+        val displayAsPercent: Boolean = false,
+        val unit: String? = null,
+        /** Placeholder name (without the surrounding `__`) baked into the `.patch` files. */
+        val token: String? = null,
+        /** How the chosen value becomes the smali literal that replaces the token. */
+        val encode: SmaliEncode? = null,
+    ) : OptionSpec {
+        val valueRange: ClosedFloatingPointRange<Float> get() = min..max
+    }
+
+    @Immutable
+    @Serializable
+    @SerialName("choice")
+    data class Choice(
+        override val key: String,
+        override val title: String,
+        override val description: String = "",
+        val entries: List<String> = emptyList(),
+        val defaultIndex: Int = 0,
+    ) : OptionSpec
+}
+
+@Serializable
+enum class EncodeKind {
+    @SerialName("floatBits")
+    FloatBits,
+
+    @SerialName("argbAlpha")
+    ArgbAlpha,
+
+    @SerialName("int")
+    IntValue,
+}
+
+@Immutable
+@Serializable
+data class SmaliEncode(
+    val kind: EncodeKind,
+    val scale: Float = 1f,
+) {
+    fun encode(value: Float): String = when (kind) {
+        // Float dp bit-pattern: const vX, <bits>; Dp.constructor-impl(F)F
+        EncodeKind.FloatBits -> (value * scale).toRawBits().toString()
+        // ARGB int with black RGB and a percentage-derived alpha: const vX, <argb>
+        EncodeKind.ArgbAlpha -> ((value / 100f * 255f).roundToInt() shl 24).toString()
+        // Plain (optionally scaled) integer literal.
+        EncodeKind.IntValue -> (value * scale).roundToInt().toString()
+    }
+}
+
+fun builtinPatchSpecs(resolve: (Int) -> String): List<PatchSpec> =
+    KnownPatch.All.map { patch ->
+        PatchSpec(
+            id = patch.name,
+            order = patch.order,
+            fileNames = patch.fileNames,
+            extensionFiles = patch.extensionFiles,
+            title = resolve(patch.titleRes),
+            description = resolve(patch.descRes),
+            defaultEnabled = patch.default.isEnabled,
+            requires = patch.requires.map { it.name },
+            disables = patch.disables.map { it.name },
+            variants = patch.variants.map { VariantSpec(resolve(it.titleRes), it.fileNames, it.extensionFiles) },
+            defaultVariantIndex = patch.defaultVariantIndex,
+            advancedOptions = patch.advancedOptions.map { it.toSpec(resolve) },
+        )
+    }
+
+private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (this) {
+    is PatchOption.Toggle -> OptionSpec.Toggle(
+        key = key,
+        title = resolve(titleRes),
+        description = resolve(descRes),
+        default = default,
+        fileNames = fileNames,
+        extensionFiles = extensionFiles,
+        inline = inline,
+        requiresVariant = requiresVariant,
+        requiresOption = requiresOption,
+        hidesVariants = hidesVariants,
+        relabelVariants = relabelVariants.mapValues { resolve(it.value) },
+    )
+
+    is PatchOption.Slider -> OptionSpec.Slider(
+        key = key,
+        title = resolve(titleRes),
+        description = resolve(descRes),
+        default = default,
+        min = valueRange.start,
+        max = valueRange.endInclusive,
+        steps = steps,
+        displayAsPercent = displayAsPercent,
+        unit = unitRes?.let(resolve),
+        token = token,
+        encode = encode,
+    )
+
+    is PatchOption.Choice -> OptionSpec.Choice(
+        key = key,
+        title = resolve(titleRes),
+        description = resolve(descRes),
+        entries = entries.map { resolve(it.labelRes) },
+        defaultIndex = defaultIndex,
+    )
+}
+
+@Immutable
+data class EffectiveVariant(val originalIndex: Int, val title: String)
+
+fun PatchSpec.effectiveVariants(isOptionOn: (OptionSpec.Toggle) -> Boolean): List<EffectiveVariant> {
+    if (variants.isEmpty()) return emptyList()
+    val hidden = mutableSetOf<Int>()
+    val relabel = mutableMapOf<Int, String>()
+    for (option in advancedOptions) {
+        if (option is OptionSpec.Toggle && isOptionOn(option)) {
+            hidden += option.hidesVariants
+            relabel += option.relabelVariants
+        }
+    }
+    return variants.mapIndexedNotNull { index, variant ->
+        if (index in hidden) null else EffectiveVariant(index, relabel[index] ?: variant.title)
+    }
+}
+
+fun PatchSpec.resolveVariantIndex(stored: Int, isOptionOn: (OptionSpec.Toggle) -> Boolean): Int {
+    val visible = effectiveVariants(isOptionOn)
+    if (visible.isEmpty() || visible.any { it.originalIndex == stored }) return stored
+    val relabelKeys = buildSet {
+        for (option in advancedOptions) {
+            if (option is OptionSpec.Toggle && isOptionOn(option)) addAll(option.relabelVariants.keys)
+        }
+    }
+    return visible.firstOrNull { it.originalIndex in relabelKeys }?.originalIndex
+        ?: visible.first().originalIndex
+}
+
+sealed interface OptionLock {
+    data object Free : OptionLock
+    data class NeedsVariant(val title: String) : OptionLock
+    data class NeedsOption(val title: String) : OptionLock
+}
+
+fun PatchSpec.optionLock(
+    option: OptionSpec,
+    selectedVariant: Int,
+    isOptionOn: (OptionSpec.Toggle) -> Boolean,
+): OptionLock {
+    if (option !is OptionSpec.Toggle) return OptionLock.Free
+    option.requiresVariant?.let { required ->
+        if (selectedVariant != required) {
+            variants.getOrNull(required)?.let { return OptionLock.NeedsVariant(it.title) }
+        }
+    }
+    option.requiresOption?.let { key ->
+        val required = advancedOptions.filterIsInstance<OptionSpec.Toggle>().firstOrNull { it.key == key }
+        if (required != null && !isOptionOn(required)) return OptionLock.NeedsOption(required.title)
+    }
+    return OptionLock.Free
+}
+
+@Stable
+class PatchOptionState(
+    val toggle: (PatchSpec, OptionSpec.Toggle) -> Boolean,
+    val setToggle: (PatchSpec, OptionSpec.Toggle, Boolean) -> Unit,
+    val slider: (PatchSpec, OptionSpec.Slider) -> Float,
+    val setSlider: (PatchSpec, OptionSpec.Slider, Float) -> Unit,
+    val choice: (PatchSpec, OptionSpec.Choice) -> Int,
+    val setChoice: (PatchSpec, OptionSpec.Choice, Int) -> Unit,
+    val isModified: (PatchSpec) -> Boolean,
+    val reset: (PatchSpec) -> Unit,
+) {
+    companion object {
+        /** Read-only stub returning defaults — for Compose previews. */
+        val Preview = PatchOptionState(
+            toggle = { _, option -> option.default },
+            setToggle = { _, _, _ -> },
+            slider = { _, option -> option.default },
+            setSlider = { _, _, _ -> },
+            choice = { _, option -> option.defaultIndex },
+            setChoice = { _, _, _ -> },
+            isModified = { false },
+            reset = {},
+        )
+    }
+}

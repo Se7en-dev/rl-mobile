@@ -2,21 +2,35 @@ package com.meowarex.rlmobile.ui.screens.patchopts
 
 import android.content.Context
 import android.content.pm.PackageManager.NameNotFoundException
+import android.util.Log
 import androidx.compose.runtime.*
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.Navigator
+import com.github.diamondminer88.zip.ZipReader
+import com.meowarex.rlmobile.BuildConfig
+import com.meowarex.rlmobile.manager.PathManager
 import com.meowarex.rlmobile.manager.PreferencesManager
 import com.meowarex.rlmobile.ui.screens.componentopts.ComponentOptionsScreen
 import com.meowarex.rlmobile.ui.screens.componentopts.PatchComponent
 import com.meowarex.rlmobile.ui.util.pushForResult
 import com.meowarex.rlmobile.util.*
+import com.meowarex.rlmobile.manager.download.IDownloadManager
+import com.meowarex.rlmobile.manager.download.KtorDownloadManager
+import com.meowarex.rlmobile.network.services.RadiantLyricsGithubService
+import com.meowarex.rlmobile.network.utils.getOrThrow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.File
 
 class PatchOptionsModel(
     prefilledOptions: PatchOptions,
     private val context: Context,
     private val prefs: PreferencesManager,
+    private val paths: PathManager,
+    private val json: Json,
+    private val github: RadiantLyricsGithubService,
+    private val downloader: KtorDownloadManager,
 ) : ScreenModel {
     var packageName by mutableStateOf(prefilledOptions.packageName)
         private set
@@ -47,76 +61,153 @@ class PatchOptionsModel(
         debuggable = value
     }
 
+    // The accordion renders from [specs]. It defaults to the compiled-in (localized) list and is
+    // rebuilt from a custom zip's manifest.json whenever a custom patch set is selected. (Rminder for others about the new custom patch selection flow)
+
+    private val builtinSpecs: List<PatchSpec> = builtinPatchSpecs { context.getString(it) }
+
+    var specs by mutableStateOf(builtinSpecs)
+        private set
+
+    var specsLoading by mutableStateOf(false)
+        private set
+
     var patchStates by mutableStateOf(prefilledOptions.patchStates)
         private set
 
     var selectedVariants by mutableStateOf(prefilledOptions.selectedVariants)
         private set
 
-    fun variantIndex(patch: KnownPatch): Int = selectedVariants[patch.name]
-        ?.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
-        ?: patch.defaultVariantIndex.coerceIn(0, patch.variants.lastIndex.coerceAtLeast(0))
+    fun variantIndex(spec: PatchSpec): Int =
+        (selectedVariants[spec.id] ?: spec.defaultVariantIndex)
+            .coerceIn(0, spec.variants.lastIndex.coerceAtLeast(0))
 
-    fun isPatchEnabled(patch: KnownPatch): Boolean =
-        patchStates[patch.name] ?: patch.default.isEnabled
+    fun isPatchEnabled(spec: PatchSpec): Boolean =
+        patchStates[spec.id] ?: spec.defaultEnabled
 
-    fun setPatchEnabled(patch: KnownPatch, enabled: Boolean) {
-        fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
+    fun setPatchEnabled(spec: PatchSpec, enabled: Boolean) {
+        val byId = specs.associateBy { it.id }
+        fun closure(seed: PatchSpec, step: (PatchSpec) -> List<PatchSpec>): Set<PatchSpec> =
             buildSet {
-                fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
+                fun walk(p: PatchSpec) { if (add(p)) step(p).forEach(::walk) }
                 walk(seed)
             }
 
-        val enableUnits: Set<KnownPatch>
-        val disableUnits: Set<KnownPatch>
+        val requiresOf = { p: PatchSpec -> p.requires.mapNotNull(byId::get) }
+        val dependentsOf = { p: PatchSpec -> specs.filter { p.id in it.requires } }
+
+        val enableUnits: Set<PatchSpec>
+        val disableUnits: Set<PatchSpec>
         if (enabled) {
-            enableUnits = closure(patch) { it.requires }
+            enableUnits = closure(spec, requiresOf)
             disableUnits = enableUnits.flatMap { it.disables }
-                .flatMapTo(mutableSetOf()) { d ->
-                    closure(d) { dep -> KnownPatch.All.filter { dep in it.requires } }
-                }
+                .mapNotNull(byId::get)
+                .flatMapTo(mutableSetOf()) { d -> closure(d, dependentsOf) }
         } else {
             enableUnits = emptySet()
-            disableUnits = closure(patch) { p -> KnownPatch.All.filter { p in it.requires } }
+            disableUnits = closure(spec, dependentsOf)
         }
 
         patchStates = patchStates.toMutableMap().apply {
-            enableUnits.forEach { this[it.name] = true }
-            disableUnits.forEach { this[it.name] = false }
+            enableUnits.forEach { this[it.id] = true }
+            disableUnits.forEach { this[it.id] = false }
         }
     }
 
-    fun selectVariant(patch: KnownPatch, index: Int) {
-        if (patch.variants.isEmpty() || index !in patch.variants.indices) return
-        selectedVariants = selectedVariants + (patch.name to index)
+    fun selectVariant(spec: PatchSpec, index: Int) {
+        if (spec.variants.isEmpty() || index !in spec.variants.indices) return
+        selectedVariants = selectedVariants + (spec.id to index)
     }
 
-    fun lockState(patch: KnownPatch): PatchLock {
-        if (patch.variants.isNotEmpty()) return PatchLock.Free
+    // Advanced (per-patch) options
+    // Values are seeded from the prefilled config, edited here, and written back out in
+    // generateConfig(). At patch time PatchOptions.smaliSubstitutions() turns slider values into
+    // the literals baked into the matching `.patch` files (see SmaliPatchStep). ()
 
-        fun closure(seed: KnownPatch, step: (KnownPatch) -> List<KnownPatch>): Set<KnownPatch> =
+    private var optionBools by mutableStateOf(prefilledOptions.optionBools)
+    private var optionFloats by mutableStateOf(prefilledOptions.optionFloats)
+    private var optionInts by mutableStateOf(prefilledOptions.optionInts)
+
+    private fun keyOf(spec: PatchSpec, option: OptionSpec): String = "${spec.id}/${option.key}"
+
+    fun toggleValue(spec: PatchSpec, option: OptionSpec.Toggle): Boolean =
+        optionBools[keyOf(spec, option)] ?: option.default
+
+    fun setToggleValue(spec: PatchSpec, option: OptionSpec.Toggle, value: Boolean) {
+        optionBools = optionBools + (keyOf(spec, option) to value)
+    }
+
+    fun sliderValue(spec: PatchSpec, option: OptionSpec.Slider): Float =
+        (optionFloats[keyOf(spec, option)] ?: option.default).coerceIn(option.min, option.max)
+
+    fun setSliderValue(spec: PatchSpec, option: OptionSpec.Slider, value: Float) {
+        optionFloats = optionFloats + (keyOf(spec, option) to value)
+    }
+
+    fun choiceValue(spec: PatchSpec, option: OptionSpec.Choice): Int =
+        (optionInts[keyOf(spec, option)] ?: option.defaultIndex)
+            .coerceIn(0, option.entries.lastIndex.coerceAtLeast(0))
+
+    fun setChoiceValue(spec: PatchSpec, option: OptionSpec.Choice, index: Int) {
+        if (index !in option.entries.indices) return
+        optionInts = optionInts + (keyOf(spec, option) to index)
+    }
+
+    fun isAdvancedModified(spec: PatchSpec): Boolean = spec.advancedOptions.any { option ->
+        when (option) {
+            is OptionSpec.Toggle -> toggleValue(spec, option) != option.default
+            is OptionSpec.Slider -> sliderValue(spec, option) != option.default
+            is OptionSpec.Choice -> choiceValue(spec, option) != option.defaultIndex
+        }
+    }
+
+    fun resetAdvanced(spec: PatchSpec) {
+        val prefix = "${spec.id}/"
+        optionBools = optionBools.filterKeys { !it.startsWith(prefix) }
+        optionFloats = optionFloats.filterKeys { !it.startsWith(prefix) }
+        optionInts = optionInts.filterKeys { !it.startsWith(prefix) }
+    }
+
+    val optionState: PatchOptionState = PatchOptionState(
+        toggle = ::toggleValue,
+        setToggle = ::setToggleValue,
+        slider = ::sliderValue,
+        setSlider = ::setSliderValue,
+        choice = ::choiceValue,
+        setChoice = ::setChoiceValue,
+        isModified = ::isAdvancedModified,
+        reset = ::resetAdvanced,
+    )
+
+    fun lockState(spec: PatchSpec): PatchLock {
+        if (spec.variants.isNotEmpty()) return PatchLock.Free
+
+        val byId = specs.associateBy { it.id }
+        fun closure(seed: PatchSpec, step: (PatchSpec) -> List<PatchSpec>): Set<PatchSpec> =
             buildSet {
-                fun walk(p: KnownPatch) { if (add(p)) step(p).forEach(::walk) }
+                fun walk(p: PatchSpec) { if (add(p)) step(p).forEach(::walk) }
                 walk(seed)
             }
 
-        for (other in KnownPatch.All) {
-            if (other == patch || !isPatchEnabled(other)) continue
+        val requiresOf = { p: PatchSpec -> p.requires.mapNotNull(byId::get) }
+        val dependentsOf = { p: PatchSpec -> specs.filter { p.id in it.requires } }
 
-            val requiresClosure = closure(other) { it.requires }
-            if (patch in requiresClosure - other) return PatchLock.LockedOn(other)
+        for (other in specs) {
+            if (other.id == spec.id || !isPatchEnabled(other)) continue
+
+            val requiresClosure = closure(other, requiresOf)
+            if (spec in requiresClosure - other) return PatchLock.LockedOn(other)
 
             val disablesClosure = requiresClosure.flatMap { it.disables }
-                .flatMapTo(mutableSetOf()) { d ->
-                    closure(d) { dep -> KnownPatch.All.filter { dep in it.requires } }
-                }
-            if (patch in disablesClosure) return PatchLock.LockedOff(other)
+                .mapNotNull(byId::get)
+                .flatMapTo(mutableSetOf()) { d -> closure(d, dependentsOf) }
+            if (spec in disablesClosure) return PatchLock.LockedOff(other)
         }
         return PatchLock.Free
     }
 
     val enabledPatchCount: Int
-        get() = KnownPatch.All.count { isPatchEnabled(it) }
+        get() = specs.count { isPatchEnabled(it) }
 
     var customTidalApk by mutableStateOf<PatchComponent?>(null)
         private set
@@ -139,6 +230,79 @@ class PatchOptionsModel(
                 componentType = PatchComponent.Type.Patches,
             )
         )
+        reloadSpecs(customPatches)
+    }
+
+    /**
+     * Rebuilds [specs] from the selected patch set
+     */
+    private fun reloadSpecs(component: PatchComponent?) = screenModelScope.launchIO {
+        mainThread { specsLoading = true }
+        val loaded = if (component == null) builtinSpecs else loadManifestSpecs(component) ?: builtinSpecs
+        mainThread {
+            specs = loaded
+            validatePatchSelection()
+            specsLoading = false
+        }
+    }
+
+    private fun loadManifestSpecs(component: PatchComponent): List<PatchSpec>? =
+        loadManifestSpecs(component.getFile(paths))
+
+    private fun loadManifestSpecs(file: File): List<PatchSpec>? {
+        if (!file.exists()) return null
+        return try {
+            val bytes = ZipReader(file).use { it.openEntry(MANIFEST_NAME)?.read() } ?: return null
+            json.decodeFromString(PatchManifest.serializer(), bytes.decodeToString())
+                .patches
+                .takeIf { it.isNotEmpty() }
+        } catch (t: Throwable) {
+            Log.w(BuildConfig.TAG, "Failed to parse $MANIFEST_NAME; using built-in list", t)
+            null
+        }
+    }
+
+    /**
+     * Pulls the patch list from the latest GitHub release's patches.zip manifest
+     */
+    private suspend fun loadLatestReleaseSpecs(): List<PatchSpec>? = try {
+        val release = github.getLatestRelease().getOrThrow()
+        val url = release.assets
+            .find { it.name == RadiantLyricsGithubService.PATCHES_ASSET_NAME }
+            ?.browserDownloadUrl
+        if (url == null) {
+            Log.w(BuildConfig.TAG, "Latest release ${release.tagName} has no patches.zip asset; using built-in list")
+            null
+        } else {
+            // Cached per release tag so re-opening the screen doesn't re-download the same zip.
+            val dest = paths.cacheDownloadDir.resolve("manifest-${release.tagName}.zip")
+                .apply { parentFile?.mkdirs() }
+            if (dest.exists() || downloader.download(url, dest) is IDownloadManager.Result.Success) {
+                loadManifestSpecs(dest).also { loaded ->
+                    if (loaded != null) {
+                        Log.i(BuildConfig.TAG, "Loaded ${loaded.size} patches from latest release ${release.tagName} manifest")
+                    } else {
+                        Log.w(BuildConfig.TAG, "Latest release ${release.tagName} ships no manifest.json; using built-in list")
+                    }
+                }
+            } else {
+                null
+            }
+        }
+    } catch (t: Throwable) {
+        Log.w(BuildConfig.TAG, "Failed to load latest release manifest; using built-in list", t)
+        null
+    }
+
+    /** Default (non-custom) source: the latest release manifest, falling back to the built-in list. */
+    private fun loadDefaultSpecs() = screenModelScope.launchIO {
+        mainThread { specsLoading = true }
+        val loaded = loadLatestReleaseSpecs() ?: builtinSpecs
+        mainThread {
+            specs = loaded
+            validatePatchSelection()
+            specsLoading = false
+        }
     }
 
     val isConfigValid by derivedStateOf {
@@ -161,6 +325,9 @@ class PatchOptionsModel(
             customPatches = customPatches,
             patchStates = patchStates,
             selectedVariants = selectedVariants,
+            optionFloats = optionFloats,
+            optionBools = optionBools,
+            optionInts = optionInts,
         )
     }
 
@@ -186,9 +353,9 @@ class PatchOptionsModel(
     }
 
     private fun validatePatchSelection() {
-        for (patch in KnownPatch.All) {
-            if (isPatchEnabled(patch)) {
-                setPatchEnabled(patch, true)
+        for (spec in specs) {
+            if (isPatchEnabled(spec)) {
+                setPatchEnabled(spec, true)
             }
         }
     }
@@ -196,9 +363,13 @@ class PatchOptionsModel(
     init {
         validatePatchSelection()
         screenModelScope.launchBlock { fetchPkgNameState() }
+        // Default source is the latest release's manifest; custom selections drive themselves.
+        if (customPatches == null) loadDefaultSpecs()
     }
 
     companion object {
+        private const val MANIFEST_NAME = "manifest.json"
+
         private val PACKAGE_REGEX = """^[a-z]\w*(\.[a-z]\w*)+$"""
             .toRegex(RegexOption.IGNORE_CASE)
     }
@@ -211,7 +382,7 @@ enum class PackageNameState {
 }
 
 sealed class PatchLock {
-    object Free : PatchLock()
-    data class LockedOn(val by: KnownPatch) : PatchLock()
-    data class LockedOff(val by: KnownPatch) : PatchLock()
+    data object Free : PatchLock()
+    data class LockedOn(val by: PatchSpec) : PatchLock()
+    data class LockedOff(val by: PatchSpec) : PatchLock()
 }
