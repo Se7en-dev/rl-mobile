@@ -293,6 +293,8 @@
   <string name="patch_mini_player_gestures_desc">Swipe up on the mini-player to open the full player.</string>
   <string name="patch_mini_player_left_right_gestures_title">Next/Previous Gestures</string>
   <string name="patch_mini_player_left_right_gestures_desc">Swipe left or right on the mini-player to skip tracks.</string>
+  <string name="patch_mini_player_dynamic_bg_title">Mini-Player Dynamic Background</string>
+  <string name="patch_mini_player_dynamic_bg_desc">Colorizes the Mini-Player depending on the currently playing track.</string>
   <string name="patch_mini_player_variant_floating_title">Floating</string>
   <string name="patch_mini_player_variant_square_grey_title">Grey</string>
   <string name="patch_mini_player_variant_square_black_title">Black</string>
