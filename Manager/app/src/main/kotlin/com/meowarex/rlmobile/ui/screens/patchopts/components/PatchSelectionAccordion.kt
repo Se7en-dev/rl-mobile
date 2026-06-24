@@ -4,6 +4,7 @@ package com.meowarex.rlmobile.ui.screens.patchopts.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -115,75 +116,85 @@ fun PatchSelectionAccordion(
                 for (patch in specs) key(patch.id) {
                     val checked = isEnabled(patch)
                     val lock = lockState(patch)
-                    PatchSwitchRow(
-                        title = patch.title,
-                        description = patch.description,
-                        checked = checked,
-                        lock = lock,
-                        onCheckedChange = { onToggle(patch, it) },
-                        onLockedTap = { lockInfo = LockInfo(patch, lock) },
-                    )
-
-                    if (patch.variants.isNotEmpty()) {
-                        AnimatedVisibility(visible = checked) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-                            ) {
-                                val effective = patch.effectiveVariants { optionState.toggle(patch, it) }
-                                val resolved = patch.resolveVariantIndex(variantIndex(patch)) {
-                                    optionState.toggle(patch, it)
-                                }
-                                PatchVariantSelector(
-                                    variants = effective,
-                                    selectedIndex = effective
-                                        .indexOfFirst { it.originalIndex == resolved }
-                                        .coerceAtLeast(0),
-                                    onSelect = { pos ->
-                                        effective.getOrNull(pos)?.let { onSelectVariant(patch, it.originalIndex) }
-                                    },
-                                )
-                            }
-                        }
-                    }
 
                     val inlineToggles = patch.advancedOptions
                         .filterIsInstance<OptionSpec.Toggle>()
                         .filter { it.inline }
-                    if (inlineToggles.isNotEmpty()) {
-                        AnimatedVisibility(visible = checked) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                verticalArrangement = Arrangement.spacedBy(2.dp),
-                            ) {
-                                for (option in inlineToggles) key(option.key) {
-                                    InlineToggleRow(
-                                        title = option.title,
-                                        description = option.description,
-                                        checked = optionState.toggle(patch, option),
-                                        onCheckedChange = { optionState.setToggle(patch, option, it) },
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     val hasSheetOptions = patch.advancedOptions.any { it !is OptionSpec.Toggle || !it.inline }
-                    if (hasSheetOptions) {
-                        AnimatedVisibility(visible = checked) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                AdvancedOptionsButton(
-                                    modified = optionState.isModified(patch),
-                                    onClick = { advancedFor = patch },
+                    val hasSettings = patch.variants.isNotEmpty() || inlineToggles.isNotEmpty() || hasSheetOptions
+
+                    // When a patch is enabled and has settings show a carded view of the settings
+                    val carded = checked && hasSettings
+                    Column(
+                        modifier = if (carded) {
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f))
+                                .border(
+                                    width = 1.5.dp,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+                                    shape = MaterialTheme.shapes.medium,
                                 )
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        } else {
+                            Modifier.fillMaxWidth()
+                        },
+                    ) {
+                        PatchSwitchRow(
+                            title = patch.title,
+                            description = patch.description,
+                            checked = checked,
+                            lock = lock,
+                            onCheckedChange = { onToggle(patch, it) },
+                            onLockedTap = { lockInfo = LockInfo(patch, lock) },
+                        )
+
+                        if (hasSettings) {
+                            AnimatedVisibility(visible = checked) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp),
+                                ) {
+                                    if (patch.variants.isNotEmpty()) {
+                                        val effective = patch.effectiveVariants { optionState.toggle(patch, it) }
+                                        val resolved = patch.resolveVariantIndex(variantIndex(patch)) {
+                                            optionState.toggle(patch, it)
+                                        }
+                                        PatchVariantSelector(
+                                            variants = effective,
+                                            selectedIndex = effective
+                                                .indexOfFirst { it.originalIndex == resolved }
+                                                .coerceAtLeast(0),
+                                            onSelect = { pos ->
+                                                effective.getOrNull(pos)?.let { onSelectVariant(patch, it.originalIndex) }
+                                            },
+                                        )
+                                    }
+
+                                    for (option in inlineToggles) key(option.key) {
+                                        InlineToggleRow(
+                                            title = option.title,
+                                            description = option.description,
+                                            checked = optionState.toggle(patch, option),
+                                            onCheckedChange = { optionState.setToggle(patch, option, it) },
+                                        )
+                                    }
+
+                                    if (hasSheetOptions) {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            AdvancedOptionsButton(
+                                                modified = optionState.isModified(patch),
+                                                onClick = { advancedFor = patch },
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
