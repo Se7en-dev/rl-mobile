@@ -2,6 +2,8 @@ package com.meowarex.rlmobile.ui.previews.screens
 
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.*
 import com.meowarex.rlmobile.network.utils.SemVer
 import com.meowarex.rlmobile.ui.screens.componentopts.PatchComponent
@@ -18,6 +20,9 @@ private fun PatchOptionsScreenPreview(
     @PreviewParameter(PatchOptionsParametersProvider::class)
     parameters: PatchOptionsParameters,
 ) {
+    val context = LocalContext.current
+    val specs = remember { builtinPatchSpecs { context.getString(it) } }
+
     ManagerTheme {
         PatchOptionsScreenContent(
             isUpdate = parameters.isUpdate,
@@ -34,14 +39,14 @@ private fun PatchOptionsScreenPreview(
             onSelectCustomTidalApk = {},
             customPatches = parameters.customPatches,
             onSelectCustomPatches = {},
-            enabledPatchCount = KnownPatch.All.size,
+            specs = specs,
+            enabledPatchCount = specs.size,
             isPatchEnabled = { true },
             onTogglePatch = { _, _ -> },
             patchLockState = { PatchLock.Free },
             variantIndex = { 0 },
             onSelectVariant = { _, _ -> },
-            isSubOptionEnabled = { _, _ -> true },
-            onToggleSubOption = { _, _, _ -> },
+            optionState = PatchOptionState.Preview,
             isConfigValid = parameters.isConfigValid,
             onInstall = {},
         )

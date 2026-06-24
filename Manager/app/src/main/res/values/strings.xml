@@ -22,6 +22,7 @@
   <string name="action_retry_install">Retry installation</string>
   <string name="action_open_error_log">Open error log</string>
   <string name="action_apply">Apply</string>
+  <string name="action_done">Done</string>
   <string name="action_confirm">Confirm</string>
   <string name="action_dismiss">Dismiss</string>
   <string name="action_install">Install</string>
@@ -251,6 +252,9 @@
   <string name="patchopts_patches_title">Patches</string>
   <string name="patchopts_patches_desc">Toggle which patches are applied during installation. Unchecked patches are skipped entirely.</string>
   <string name="patchopts_patches_summary">%1$d of %2$d enabled</string>
+  <string name="patchopts_advanced_button">Advanced Options</string>
+  <string name="patchopts_advanced_sheet_label">Advanced Options</string>
+  <string name="patchopts_toggle_snap">Toggle snapping to steps</string>
 
   <string name="patch_lyrics_disable_cover_title">Disable Lyrics Cover</string>
   <string name="patch_lyrics_disable_cover_desc">Removes the mini track cover from the lyrics screen.</string>
@@ -298,11 +302,23 @@
   <string name="patch_mini_player_variant_floating_title">Floating</string>
   <string name="patch_mini_player_variant_square_grey_title">Grey</string>
   <string name="patch_mini_player_variant_square_black_title">Black</string>
+  <string name="patch_mini_player_variant_legacy_title">Legacy</string>
+  <string name="patch_mini_player_border_title">Progress Border</string>
+  <string name="patch_mini_player_border_desc">Draws an animated progress ring around the floating mini-player. Requires the Floating style.</string>
+
+  <!-- Advanced option labels -->
+  <string name="patch_opt_backdrop_blur_title">Blur Strength</string>
+  <string name="patch_opt_backdrop_blur_desc">How strongly the album art behind the player is blurred.</string>
+  <string name="patch_opt_backdrop_dimming_title">Backdrop Dimming</string>
+  <string name="patch_opt_backdrop_dimming_desc">Adjusts the level of darkening on the backdrop to keep foreground controls legible.</string>
 
   <string name="patch_lock_required_title">Patch Required!</string>
   <string name="patch_lock_blocked_title">Patch Blocked!</string>
   <string name="patch_lock_required_msg">Patch Required by &lt;b>%s&lt;/b>.</string>
   <string name="patch_lock_blocked_msg">Patch Blocked by &lt;b>%s&lt;/b>.</string>
+  <string name="patch_opt_lock_title">Option Locked</string>
+  <string name="patch_opt_lock_needs_variant">Requires the &lt;b>%s&lt;/b> style.</string>
+  <string name="patch_opt_lock_needs_option">Requires the &lt;b>%s&lt;/b> option.</string>
   <string name="action_got_it">Got it</string>
 
   <string name="componentopts_screen_title">Custom Component (%s)</string>

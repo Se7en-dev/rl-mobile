@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "patches": [
+    {
+      "id": "EnableLegacyUi",
+      "order": 10,
+      "fileNames": ["enable-legacy-ui.patch"],
+      "title": "Enable Legacy UI",
+      "description": "[This patch will stop working soon] - Replaces the New Compose based UI with the Legacy UI (disables player-market-ui feature flag)",
+      "default": false,
+      "requires": ["DebugMenuUnlock"],
+      "disables": [
+        "LyricsDisableCover",
+        "LyricsReplaceLyricsButton",
+        "LyricsReplaceShareButton",
+        "LyricsRlApi",
+        "LyricsKeepControlsVisible",
+        "PlayerBackdrop",
+        "QualityBadgeColors",
+        "LyricsProgressPill",
+        "CoverEverywhere",
+        "MiniPlayerRedesign"
+      ]
+    },
+    {
+      "id": "LyricsRlApi",
+      "order": 20,
+      "fileNames": ["lyrics-rl-api.patch", "lyrics-rl-api-observer.patch"],
+      "title": "Radiant Lyrics API - WIP",
+      "description": "Use Radiant Lyrics API to fetch Lyrics (Higher quality & More providers)",
+      "default": false
+    },
+    {
+      "id": "PlayerBackdrop",
+      "order": 30,
+      "fileNames": ["player-backdrop.patch"],
+      "title": "Player Backdrop",
+      "description": "Restores the legacy translucent backdrop blur behind the player.",
+      "default": true,
+      "advancedOptions": [
+        {
+          "type": "slider",
+          "key": "blur_strength",
+          "title": "Blur Strength",
+          "description": "How strongly the album art behind the player is blurred. 0% is sharp, 50% matches the original look.",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "steps": 19,
+          "displayAsPercent": true,
+          "token": "RL_BLUR_BITS",
+          "encode": { "kind": "floatBits", "scale": 1.8 }
+        },
+        {
+          "type": "slider",
+          "key": "dimming",
+          "title": "Backdrop Dimming",
+          "description": "Darkens the backdrop so the foreground controls stay legible.",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "steps": 19,
+          "displayAsPercent": true,
+          "token": "RL_SCRIM_ARGB",
+          "encode": { "kind": "argbAlpha" }
+        }
+      ]
+    },
+    {
+      "id": "CoverEverywhere",
+      "order": 35,
+      "fileNames": ["home-backdrop.patch", "collection-backdrop.patch", "cover-capture.patch"],
+      "title": "Cover Everywhere - WIP",
+      "description": "Applies the blurred backdrop to every Compose based page (Home & Collection)",
+      "default": false
+    },
+    {
+      "id": "QualityBadgeColors",
+      "order": 36,
+      "fileNames": ["player-quality-badge-colors.patch"],
+      "title": "Quality Badge Colors",
+      "description": "Brings color back to the player quality badge.",
+      "default": true
+    },
+    {
+      "id": "PlayerOneHanded",
+      "order": 37,
+      "fileNames": ["player-one-handed.patch"],
+      "title": "One-Handed Mode",
+      "description": "Mirrors the bottom player buttons left-to-right for easier one-handed reach.",
+      "default": false
+    },
+    {
+      "id": "LyricsProgressPill",
+      "order": 40,
+      "fileNames": ["lyrics-progress-pill.patch", "lyrics-fade-region.patch"],
+      "title": "Lyrics Progress Pill",
+      "description": "Restores the old Track Progress Pill in the top of the Lyrics screen!",
+      "default": true,
+      "requires": ["LyricsDisableCover", "LyricsReplaceLyricsButton", "LyricsReplaceShareButton"]
+    },
+    {
+      "id": "LyricsDisableCover",
+      "order": 41,
+      "fileNames": ["lyrics-disable-cover.patch"],
+      "title": "Disable Lyrics Cover",
+      "description": "Removes the mini track cover from the lyrics screen.",
+      "default": true
+    },
+    {
+      "id": "LyricsReplaceLyricsButton",
+      "order": 42,
+      "fileNames": ["lyrics-replace-lyrics-button.patch", "lyrics-sparkle-conditional-visibility.patch"],
+      "title": "Replace Lyrics Button",
+      "description": "Replaces the Lyrics button with the RL Sparkle!",
+      "default": true
+    },
+    {
+      "id": "LyricsReplaceShareButton",
+      "order": 43,
+      "fileNames": ["lyrics-replace-share-button.patch"],
+      "title": "Replace Share Button",
+      "description": "Replaces the share button with the Tidal Connect button from the top of the screen. (it's in the menu already)",
+      "default": true
+    },
+    {
+      "id": "MiniPlayerRedesign",
+      "order": 50,
+      "fileNames": [],
+      "title": "Redesigned Mini-Player",
+      "description": "Integrates the Seekbar into the control panel at the bottom of the screen.",
+      "default": false,
+      "defaultVariantIndex": 2,
+      "variants": [
+        { "title": "Floating", "fileNames": [] },
+        { "title": "Grey", "fileNames": ["mini-player-grey.patch"] },
+        { "title": "Black", "fileNames": ["mini-player-black.patch"] }
+      ],
+      "advancedOptions": [
+        {
+          "type": "toggle",
+          "key": "dynamic_bg",
+          "title": "Mini-Player Dynamic Background",
+          "description": "Colorizes the Mini-Player depending on the currently playing track.",
+          "default": false,
+          "inline": true,
+          "fileNames": ["mini-player-dynamic-bg.patch"],
+          "extensionFiles": ["radiant/MiniPlayerBackground.smali"],
+          "hidesVariants": [2],
+          "relabelVariants": { "1": "Legacy" }
+        },
+        {
+          "type": "toggle",
+          "key": "border",
+          "title": "Progress Border",
+          "description": "Draws an animated progress ring around the floating mini-player. Requires the Floating style.",
+          "default": false,
+          "requiresVariant": 0,
+          "fileNames": ["mini-player-floating-border.patch"],
+          "extensionFiles": ["radiant/MiniSeekerFloating.smali"]
+        },
+        {
+          "type": "toggle",
+          "key": "gestures",
+          "title": "Mini-Player Gestures",
+          "description": "Swipe up on the mini-player to open the full player.",
+          "default": true,
+          "fileNames": ["mini-player-gestures.patch"],
+          "extensionFiles": [
+            "radiant/MiniPlayerGestures.smali",
+            "radiant/MiniPlayerGestures$Gesture.smali",
+            "radiant/MiniPlayerGestures$RootGesture.smali",
+            "radiant/MiniPlayerGestures$ApplyPending.smali"
+          ]
+        },
+        {
+          "type": "toggle",
+          "key": "next_prev",
+          "title": "Next/Previous Gestures",
+          "description": "Swipe left or right on the mini-player to skip tracks.",
+          "default": false,
+          "requiresOption": "gestures",
+          "fileNames": ["mini-player-gestures-left-right.patch"],
+          "extensionFiles": [
+            "radiant/MiniPlayerTrackGestures.smali",
+            "radiant/MiniPlayerTrackGestures$Gesture.smali",
+            "radiant/MiniPlayerTrackGestures$OffsetLayer.smali",
+            "radiant/MiniPlayerTrackGestures$ResetAnimator.smali",
+            "radiant/MiniPlayerTrackGestures$TextDraw.smali",
+            "com/tidal/android/feature/appscaffold/ui/q$c.smali"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "LyricsKeepControlsVisible",
+      "order": 60,
+      "fileNames": ["lyrics-keep-controls-visible.patch"],
+      "title": "Keep Controls Visible",
+      "description": "Inverts the auto-hide behavior on the lyrics screen, playback controls stay visible by default and only hide when you tap them off.",
+      "default": true
+    },
+    {
+      "id": "DebugMenuUnlock",
+      "order": 100,
+      "fileNames": ["debug-menu-unlock.patch"],
+      "title": "Unlock Debug Menu",
+      "description": "Reveals TIDAL's hidden Debug Menu in Settings. (Unlocks Feature Flags & the legacy Debug Options)",
+      "default": false
+    }
+  ]
+}

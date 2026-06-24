@@ -70,7 +70,7 @@
 +
 +    move-result-object v5    # filled modifier
 +
-+    const/high16 v7, 0x42b40000    # 90f blur dp
++    const v7, __RL_BLUR_BITS__    # blur dp bits (Advanced Options: Blur Strength)
 +
 +    invoke-static {v7}, Landroidx/compose/ui/unit/Dp;->constructor-impl(F)F    # to Dp
 +
@@ -126,7 +126,7 @@
 +
 +    move-result-object v3    # fullscreen modifier
 +
-+    const v6, -0x80000000    # 50% black ARGB
++    const v6, __RL_SCRIM_ARGB__    # scrim ARGB (Advanced Options: Backdrop Dimming)
 +
 +    invoke-static {v6}, Landroidx/compose/ui/graphics/ColorKt;->Color(I)J    # pack color long
 +

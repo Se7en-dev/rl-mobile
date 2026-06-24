@@ -35,54 +35,86 @@ data class PatchOptions(
     val patchStates: Map<String, Boolean> = emptyMap(),
 
     val selectedVariants: Map<String, Int> = emptyMap(),
+    val optionFloats: Map<String, Float> = emptyMap(),
+    val optionBools: Map<String, Boolean> = emptyMap(),
+    val optionInts: Map<String, Int> = emptyMap(),
 ) : Parcelable {
 
-    fun isEnabled(patch: KnownPatch): Boolean =
-        patchStates[patch.name] ?: patch.default.isEnabled
+    fun isEnabled(spec: PatchSpec): Boolean =
+        patchStates[spec.id] ?: spec.defaultEnabled
 
-    fun isEnabled(subOption: PatchSubOption): Boolean =
-        patchStates[subOption.key] ?: subOption.default.isEnabled
+    fun variantIndex(spec: PatchSpec): Int {
+        val stored = (selectedVariants[spec.id] ?: spec.defaultVariantIndex)
+            .coerceIn(0, spec.variants.lastIndex.coerceAtLeast(0))
+        return spec.resolveVariantIndex(stored) { isToggleOn(spec, it) }
+    }
 
-    fun disabledPatchFiles(): Set<String> = buildSet<String> {
-        for (patch in KnownPatch.All) {
-            val enabled = isEnabled(patch)
-            if (patch.variants.isEmpty()) {
-                if (!enabled) addAll(patch.fileNames)
+    fun sliderValue(spec: PatchSpec, option: OptionSpec.Slider): Float =
+        (optionFloats["${spec.id}/${option.key}"] ?: option.default).coerceIn(option.min, option.max)
+
+    fun isToggleOn(spec: PatchSpec, option: OptionSpec.Toggle): Boolean =
+        optionBools["${spec.id}/${option.key}"] ?: option.default
+
+    fun isToggleActive(spec: PatchSpec, option: OptionSpec.Toggle): Boolean {
+        if (!isToggleOn(spec, option)) return false
+        option.requiresVariant?.let { if (variantIndex(spec) != it) return false }
+        option.requiresOption?.let { key ->
+            val required = spec.advancedOptions.filterIsInstance<OptionSpec.Toggle>()
+                .firstOrNull { it.key == key }
+            if (required != null && !isToggleOn(spec, required)) return false
+        }
+        return true
+    }
+
+    fun disabledPatchFiles(specs: List<PatchSpec>): Set<String> = buildSet {
+        for (spec in specs) {
+            val enabled = isEnabled(spec)
+            if (spec.variants.isEmpty()) {
+                if (!enabled) addAll(spec.fileNames)
             } else {
-                val selected = (selectedVariants[patch.name] ?: patch.defaultVariantIndex)
-                    .coerceIn(0, patch.variants.lastIndex)
-                patch.variants.forEachIndexed { index, variant ->
+                val selected = variantIndex(spec)
+                spec.variants.forEachIndexed { index, variant ->
                     if (!enabled || index != selected) addAll(variant.fileNames)
                 }
             }
-            for (subOption in patch.subOptions) {
-                if (!enabled || !isEnabled(subOption)) addAll(subOption.fileNames)
+            // Toggle sub-options that gate patch files.
+            for (option in spec.advancedOptions) {
+                if (option is OptionSpec.Toggle && option.fileNames.isNotEmpty()) {
+                    if (!enabled || !isToggleActive(spec, option)) addAll(option.fileNames)
+                }
             }
         }
     }
 
-    fun knownExtensionFiles(): Set<String> = buildSet {
-        for (patch in KnownPatch.All) {
-            addAll(patch.extensionFileNames)
-            patch.variants.forEach { addAll(it.extensionFileNames) }
-            patch.subOptions.forEach { addAll(it.extensionFileNames) }
+    fun knownExtensionFiles(specs: List<PatchSpec>): Set<String> = buildSet {
+        for (spec in specs) {
+            addAll(spec.extensionFiles)
+            spec.variants.forEach { addAll(it.extensionFiles) }
+            spec.advancedOptions.forEach { if (it is OptionSpec.Toggle) addAll(it.extensionFiles) }
         }
     }
 
-    fun enabledExtensionFiles(): Set<String> = buildSet {
-        for (patch in KnownPatch.All) {
-            if (!isEnabled(patch)) continue
-
-            addAll(patch.extensionFileNames)
-
-            if (patch.variants.isNotEmpty()) {
-                val selected = (selectedVariants[patch.name] ?: patch.defaultVariantIndex)
-                    .coerceIn(0, patch.variants.lastIndex)
-                addAll(patch.variants[selected].extensionFileNames)
+    fun enabledExtensionFiles(specs: List<PatchSpec>): Set<String> = buildSet {
+        for (spec in specs) {
+            if (!isEnabled(spec)) continue
+            addAll(spec.extensionFiles)
+            if (spec.variants.isNotEmpty()) {
+                spec.variants.getOrNull(variantIndex(spec))?.let { addAll(it.extensionFiles) }
             }
+            for (option in spec.advancedOptions) {
+                if (option is OptionSpec.Toggle && isToggleActive(spec, option)) addAll(option.extensionFiles)
+            }
+        }
+    }
 
-            for (subOption in patch.subOptions) {
-                if (isEnabled(subOption)) addAll(subOption.extensionFileNames)
+    fun smaliSubstitutions(specs: List<PatchSpec>): Map<String, String> = buildMap {
+        for (spec in specs) {
+            if (!isEnabled(spec)) continue
+            for (option in spec.advancedOptions) {
+                if (option !is OptionSpec.Slider) continue
+                val token = option.token ?: continue
+                val encode = option.encode ?: continue
+                put("__${token}__", encode.encode(sliderValue(spec, option)))
             }
         }
     }

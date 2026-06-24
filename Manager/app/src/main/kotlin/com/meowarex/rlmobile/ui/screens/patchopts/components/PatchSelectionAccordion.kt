@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,23 +23,26 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import com.meowarex.rlmobile.R
-import com.meowarex.rlmobile.ui.screens.patchopts.KnownPatch
+import com.meowarex.rlmobile.ui.screens.patchopts.OptionSpec
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchLock
-import com.meowarex.rlmobile.ui.screens.patchopts.PatchSubOption
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptionState
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchSpec
+import com.meowarex.rlmobile.ui.screens.patchopts.effectiveVariants
+import com.meowarex.rlmobile.ui.screens.patchopts.resolveVariantIndex
 
-private data class LockInfo(val patch: KnownPatch, val lock: PatchLock)
+private data class LockInfo(val patch: PatchSpec, val lock: PatchLock)
 
 @Composable
 fun PatchSelectionAccordion(
+    specs: List<PatchSpec>,
     enabledCount: Int,
     totalCount: Int,
-    isEnabled: (KnownPatch) -> Boolean,
-    onToggle: (KnownPatch, Boolean) -> Unit,
-    lockState: (KnownPatch) -> PatchLock,
-    variantIndex: (KnownPatch) -> Int,
-    onSelectVariant: (KnownPatch, Int) -> Unit,
-    isSubOptionEnabled: (KnownPatch, PatchSubOption) -> Boolean,
-    onToggleSubOption: (KnownPatch, PatchSubOption, Boolean) -> Unit,
+    isEnabled: (PatchSpec) -> Boolean,
+    onToggle: (PatchSpec, Boolean) -> Unit,
+    lockState: (PatchSpec) -> PatchLock,
+    variantIndex: (PatchSpec) -> Int,
+    onSelectVariant: (PatchSpec, Int) -> Unit,
+    optionState: PatchOptionState,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -48,6 +52,7 @@ fun PatchSelectionAccordion(
     )
 
     var lockInfo by remember { mutableStateOf<LockInfo?>(null) }
+    var advancedFor by remember { mutableStateOf<PatchSpec?>(null) }
 
     Column(
         modifier = modifier
@@ -107,12 +112,12 @@ fun PatchSelectionAccordion(
                         .padding(bottom = 8.dp),
                 )
 
-                for (patch in KnownPatch.All) key(patch) {
+                for (patch in specs) key(patch.id) {
                     val checked = isEnabled(patch)
                     val lock = lockState(patch)
                     PatchSwitchRow(
-                        title = stringResource(patch.titleRes),
-                        description = stringResource(patch.descRes),
+                        title = patch.title,
+                        description = patch.description,
                         checked = checked,
                         lock = lock,
                         onCheckedChange = { onToggle(patch, it) },
@@ -126,34 +131,59 @@ fun PatchSelectionAccordion(
                                     .fillMaxWidth()
                                     .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                             ) {
+                                val effective = patch.effectiveVariants { optionState.toggle(patch, it) }
+                                val resolved = patch.resolveVariantIndex(variantIndex(patch)) {
+                                    optionState.toggle(patch, it)
+                                }
                                 PatchVariantSelector(
-                                    variants = patch.variants,
-                                    selectedIndex = variantIndex(patch),
-                                    onSelect = { idx -> onSelectVariant(patch, idx) },
+                                    variants = effective,
+                                    selectedIndex = effective
+                                        .indexOfFirst { it.originalIndex == resolved }
+                                        .coerceAtLeast(0),
+                                    onSelect = { pos ->
+                                        effective.getOrNull(pos)?.let { onSelectVariant(patch, it.originalIndex) }
+                                    },
                                 )
                             }
                         }
                     }
 
-                    if (patch.subOptions.isNotEmpty()) {
+                    val inlineToggles = patch.advancedOptions
+                        .filterIsInstance<OptionSpec.Toggle>()
+                        .filter { it.inline }
+                    if (inlineToggles.isNotEmpty()) {
                         AnimatedVisibility(visible = checked) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                                    .padding(horizontal = 4.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
                             ) {
-                                for (subOption in patch.subOptions) key(subOption) {
-                                    PatchSwitchRow(
-                                        title = stringResource(subOption.titleRes),
-                                        description = stringResource(subOption.descRes),
-                                        checked = isSubOptionEnabled(patch, subOption),
-                                        lock = PatchLock.Free,
-                                        onCheckedChange = {
-                                            onToggleSubOption(patch, subOption, it)
-                                        },
-                                        onLockedTap = {},
+                                for (option in inlineToggles) key(option.key) {
+                                    InlineToggleRow(
+                                        title = option.title,
+                                        description = option.description,
+                                        checked = optionState.toggle(patch, option),
+                                        onCheckedChange = { optionState.setToggle(patch, option, it) },
                                     )
                                 }
+                            }
+                        }
+                    }
+
+                    val hasSheetOptions = patch.advancedOptions.any { it !is OptionSpec.Toggle || !it.inline }
+                    if (hasSheetOptions) {
+                        AnimatedVisibility(visible = checked) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                AdvancedOptionsButton(
+                                    modified = optionState.isModified(patch),
+                                    onClick = { advancedFor = patch },
+                                )
                             }
                         }
                     }
@@ -167,6 +197,84 @@ fun PatchSelectionAccordion(
             thisPatch = info.patch,
             lock = info.lock,
             onDismiss = { lockInfo = null },
+        )
+    }
+
+    advancedFor?.let { patch ->
+        PatchAdvancedOptionsSheet(
+            patch = patch,
+            state = optionState,
+            selectedVariant = patch.resolveVariantIndex(variantIndex(patch)) { optionState.toggle(patch, it) },
+            onDismiss = { advancedFor = null },
+        )
+    }
+}
+
+@Composable
+private fun AdvancedOptionsButton(
+    modified: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_tune),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.patchopts_advanced_button))
+        if (modified) {
+            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+            )
+        }
+    }
+}
+
+@Composable
+private fun InlineToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    val interactionSource = remember(::MutableInteractionSource)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                role = Role.Switch,
+            ) { onCheckedChange(!checked) }
+            .padding(vertical = 4.dp),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.alpha(.7f),
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            interactionSource = interactionSource,
         )
     }
 }
@@ -238,7 +346,7 @@ private fun PatchSwitchRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PatchLockDialog(
-    thisPatch: KnownPatch,
+    thisPatch: PatchSpec,
     lock: PatchLock,
     onDismiss: () -> Unit,
 ) {
@@ -246,12 +354,12 @@ private fun PatchLockDialog(
         is PatchLock.LockedOn -> Triple(
             R.string.patch_lock_required_title,
             R.string.patch_lock_required_msg,
-            stringResource(lock.by.titleRes),
+            lock.by.title,
         )
         is PatchLock.LockedOff -> Triple(
             R.string.patch_lock_blocked_title,
             R.string.patch_lock_blocked_msg,
-            stringResource(lock.by.titleRes),
+            lock.by.title,
         )
         PatchLock.Free -> return
     }

@@ -60,14 +60,14 @@ class PatchOptionsScreen(
             onSelectCustomTidalApk = { model.selectCustomTidalApk(navigator) },
             onSelectCustomPatches = { model.selectCustomPatches(navigator) },
 
+            specs = model.specs,
             enabledPatchCount = model.enabledPatchCount,
             isPatchEnabled = model::isPatchEnabled,
             onTogglePatch = model::setPatchEnabled,
             patchLockState = model::lockState,
             variantIndex = model::variantIndex,
             onSelectVariant = model::selectVariant,
-            isSubOptionEnabled = model::isSubOptionEnabled,
-            onToggleSubOption = model::setSubOptionEnabled,
+            optionState = model.optionState,
 
             isConfigValid = model.isConfigValid,
             onInstall = {
@@ -98,14 +98,14 @@ fun PatchOptionsScreenContent(
     customPatches: PatchComponent?,
     onSelectCustomPatches: () -> Unit,
 
+    specs: List<PatchSpec>,
     enabledPatchCount: Int,
-    isPatchEnabled: (KnownPatch) -> Boolean,
-    onTogglePatch: (KnownPatch, Boolean) -> Unit,
-    patchLockState: (KnownPatch) -> PatchLock,
-    variantIndex: (KnownPatch) -> Int,
-    onSelectVariant: (KnownPatch, Int) -> Unit,
-    isSubOptionEnabled: (KnownPatch, PatchSubOption) -> Boolean,
-    onToggleSubOption: (KnownPatch, PatchSubOption, Boolean) -> Unit,
+    isPatchEnabled: (PatchSpec) -> Boolean,
+    onTogglePatch: (PatchSpec, Boolean) -> Unit,
+    patchLockState: (PatchSpec) -> PatchLock,
+    variantIndex: (PatchSpec) -> Int,
+    onSelectVariant: (PatchSpec, Int) -> Unit,
+    optionState: PatchOptionState,
 
     isConfigValid: Boolean,
     onInstall: () -> Unit,
@@ -168,15 +168,15 @@ fun PatchOptionsScreenContent(
             }
 
             PatchSelectionAccordion(
+                specs = specs,
                 enabledCount = enabledPatchCount,
-                totalCount = KnownPatch.All.size,
+                totalCount = specs.size,
                 isEnabled = isPatchEnabled,
                 onToggle = onTogglePatch,
                 lockState = patchLockState,
                 variantIndex = variantIndex,
                 onSelectVariant = onSelectVariant,
-                isSubOptionEnabled = isSubOptionEnabled,
-                onToggleSubOption = onToggleSubOption,
+                optionState = optionState,
                 modifier = Modifier.padding(top = 4.dp),
             )
 
