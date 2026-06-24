@@ -42,6 +42,8 @@ class SmaliPatchStep(
         val patches = mutableListOf<LoadedPatch>()
         val localsBumps = mutableMapOf<Pair<String, String>, Int>()
         val disabledFiles = options.disabledPatchFiles()
+        val knownExtensionFiles = options.knownExtensionFiles()
+        val enabledExtensionFiles = options.enabledExtensionFiles()
 
         // Load and parse all the patches from the smali archive.
         container.log("Loading patches from smali patch archive: ${patchesZip.absolutePath}")
@@ -54,6 +56,11 @@ class SmaliPatchStep(
 
                 if (patchFile.endsWith(".smali") && patchFile.startsWith("extension/")) {
                     val relative = patchFile.removePrefix("extension/")
+                    if (relative in knownExtensionFiles && relative !in enabledExtensionFiles) {
+                        container.log("Skipping disabled extension smali: $relative")
+                        continue
+                    }
+
                     val out = smaliDir.resolve(relative)
                     // Guard against zip-slip: a crafted entry could otherwise escape smaliDir.
                     val baseCanonical = smaliDir.canonicalPath + File.separator

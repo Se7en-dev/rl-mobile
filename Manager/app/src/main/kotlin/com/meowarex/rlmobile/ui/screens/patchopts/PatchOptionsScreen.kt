@@ -66,6 +66,8 @@ class PatchOptionsScreen(
             patchLockState = model::lockState,
             variantIndex = model::variantIndex,
             onSelectVariant = model::selectVariant,
+            isSubOptionEnabled = model::isSubOptionEnabled,
+            onToggleSubOption = model::setSubOptionEnabled,
 
             isConfigValid = model.isConfigValid,
             onInstall = {
@@ -102,6 +104,8 @@ fun PatchOptionsScreenContent(
     patchLockState: (KnownPatch) -> PatchLock,
     variantIndex: (KnownPatch) -> Int,
     onSelectVariant: (KnownPatch, Int) -> Unit,
+    isSubOptionEnabled: (KnownPatch, PatchSubOption) -> Boolean,
+    onToggleSubOption: (KnownPatch, PatchSubOption, Boolean) -> Unit,
 
     isConfigValid: Boolean,
     onInstall: () -> Unit,
@@ -171,6 +175,8 @@ fun PatchOptionsScreenContent(
                 lockState = patchLockState,
                 variantIndex = variantIndex,
                 onSelectVariant = onSelectVariant,
+                isSubOptionEnabled = isSubOptionEnabled,
+                onToggleSubOption = onToggleSubOption,
                 modifier = Modifier.padding(top = 4.dp),
             )
 

@@ -289,6 +289,10 @@
 
   <string name="patch_mini_player_redesign_title">Redesigned Mini-Player</string>
   <string name="patch_mini_player_redesign_desc">Integrates the Seekbar into the control panel at the bottom of the screen.</string>
+  <string name="patch_mini_player_gestures_title">Mini-Player Gestures</string>
+  <string name="patch_mini_player_gestures_desc">Swipe up on the mini-player to open the full player.</string>
+  <string name="patch_mini_player_left_right_gestures_title">Next/Previous Gestures</string>
+  <string name="patch_mini_player_left_right_gestures_desc">Swipe left or right on the mini-player to skip tracks.</string>
   <string name="patch_mini_player_variant_floating_title">Floating</string>
   <string name="patch_mini_player_variant_square_grey_title">Grey</string>
   <string name="patch_mini_player_variant_square_black_title">Black</string>

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.meowarex.rlmobile.R
 import com.meowarex.rlmobile.ui.screens.patchopts.KnownPatch
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchLock
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchSubOption
 
 private data class LockInfo(val patch: KnownPatch, val lock: PatchLock)
 
@@ -36,6 +37,8 @@ fun PatchSelectionAccordion(
     lockState: (KnownPatch) -> PatchLock,
     variantIndex: (KnownPatch) -> Int,
     onSelectVariant: (KnownPatch, Int) -> Unit,
+    isSubOptionEnabled: (KnownPatch, PatchSubOption) -> Boolean,
+    onToggleSubOption: (KnownPatch, PatchSubOption, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -128,6 +131,29 @@ fun PatchSelectionAccordion(
                                     selectedIndex = variantIndex(patch),
                                     onSelect = { idx -> onSelectVariant(patch, idx) },
                                 )
+                            }
+                        }
+                    }
+
+                    if (patch.subOptions.isNotEmpty()) {
+                        AnimatedVisibility(visible = checked) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                            ) {
+                                for (subOption in patch.subOptions) key(subOption) {
+                                    PatchSwitchRow(
+                                        title = stringResource(subOption.titleRes),
+                                        description = stringResource(subOption.descRes),
+                                        checked = isSubOptionEnabled(patch, subOption),
+                                        lock = PatchLock.Free,
+                                        onCheckedChange = {
+                                            onToggleSubOption(patch, subOption, it)
+                                        },
+                                        onLockedTap = {},
+                                    )
+                                }
                             }
                         }
                     }
