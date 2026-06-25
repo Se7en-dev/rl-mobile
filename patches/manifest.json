@@ -177,7 +177,7 @@
           "type": "toggle",
           "key": "swipe_up_drag",
           "title": "Enable Drag",
-          "description": "Makes player follow your finger when swiping up. Disable if Android gesture navigation conflicts.",
+          "description": "Makes player follow your finger when swiping up.",
           "default": true,
           "requiresOption": "gestures",
           "token": "RL_MINI_PLAYER_SWIPE_UP_DRAG"
