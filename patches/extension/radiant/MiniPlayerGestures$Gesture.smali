@@ -38,9 +38,12 @@
 # True once horizontal movement wins (prevents later vertical start)
 .field public j:Z
 
+# Drag option enabled
+.field public final k:Z
+
 
 # direct methods
-.method public constructor <init>(Lyl0/l;Landroidx/compose/material3/SheetState;)V
+.method public constructor <init>(Lyl0/l;Landroidx/compose/material3/SheetState;Z)V
     .locals 0
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -48,6 +51,8 @@
     iput-object p1, p0, Lradiant/MiniPlayerGestures$Gesture;->a:Lyl0/l;
 
     iput-object p2, p0, Lradiant/MiniPlayerGestures$Gesture;->f:Landroidx/compose/material3/SheetState;
+
+    iput-boolean p3, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
 
     return-void
 .end method
@@ -150,6 +155,10 @@
 
     iput-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->e:Z
 
+    iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+
+    if-eqz v0, :done
+
     iget-object v1, p0, Lradiant/MiniPlayerGestures$Gesture;->f:Landroidx/compose/material3/SheetState;
 
     iget v0, p0, Lradiant/MiniPlayerGestures$Gesture;->b:F
@@ -158,6 +167,7 @@
 
     invoke-direct {p0}, Lradiant/MiniPlayerGestures$Gesture;->openPlayer()V
 
+    :done
     return-void
 .end method
 
@@ -253,6 +263,10 @@
 
     if-eqz v3, :maybe_start
 
+    iget-boolean v3, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+
+    if-eqz v3, :store_last
+
     invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->dragSheet(FJ)V
 
     goto :store_last
@@ -329,6 +343,10 @@
     :begin
     invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->startSheet(FJ)V
 
+    iget-boolean v10, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+
+    if-eqz v10, :store_last
+
     invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->dragSheet(FJ)V
 
 
@@ -346,6 +364,10 @@
     iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->e:Z
 
     if-eqz v0, :finish
+
+    iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+
+    if-eqz v0, :open_simple
 
     invoke-static {p1}, Lradiant/MiniPlayerGestures;->trackMotion(Landroid/view/MotionEvent;)V
 
@@ -366,6 +388,11 @@
     move-result v0
 
     invoke-direct {p0, v0}, Lradiant/MiniPlayerGestures$Gesture;->finishSheet(F)V
+
+    goto :finish
+
+    :open_simple
+    invoke-direct {p0}, Lradiant/MiniPlayerGestures$Gesture;->openPlayer()V
 
 
     :finish

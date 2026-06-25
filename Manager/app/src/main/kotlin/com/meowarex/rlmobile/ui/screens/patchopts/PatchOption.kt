@@ -32,6 +32,8 @@ sealed interface PatchOption {
         val hidesVariants: List<Int> = emptyList(),
         /** Variant title overrides (index -> @StringRes) applied while this toggle is on. */
         val relabelVariants: Map<Int, Int> = emptyMap(),
+        /** Placeholder name (without the surrounding `__`) baked into the `.patch` files. */
+        val token: String? = null,
     ) : PatchOption
 
     /** A continuous (or stepped) numeric value within [valueRange]. */

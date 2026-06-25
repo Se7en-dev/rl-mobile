@@ -1,6 +1,19 @@
 --- a/com/tidal/android/feature/appscaffold/ui/composable/i.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/i.smali
-@@ -2832,27 +2832,5 @@
+@@ -2427,6 +2427,12 @@
+     move-object/from16 v16, v9
+
+     .line 99
++    move-object/from16 v9, v25 # SheetState
++
++    invoke-static {v5, v6, v9}, Lradiant/MiniPlayerGestures;->rootModifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # continue drag after player recomposition
++
++    move-result-object v5
++
+     invoke-static {v15, v5}, Landroidx/compose/ui/ComposedModifierKt;->materializeModifier(Landroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+
+     move-result-object v9
+@@ -2832,27 +2838,7 @@
 -    .line 150
 -    sget-object v8, Lkotlin/u;->a:Lkotlin/u;
 -
@@ -28,22 +41,11 @@
 -    invoke-static {v0, v8, v10}, Landroidx/compose/ui/input/pointer/SuspendingPointerInputFilterKt;->pointerInput(Landroidx/compose/ui/Modifier;Ljava/lang/Object;Landroidx/compose/ui/input/pointer/PointerInputEventHandler;)Landroidx/compose/ui/Modifier;
 +    move-object/from16 v8, v25    # SheetState from AppScaffold
 +
-+    invoke-static {v0, v6, v8}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # attach swipe up listener
++    const/4 v10, __RL_MINI_PLAYER_SWIPE_UP_DRAG__    # Enable Drag option
++
++    invoke-static {v0, v6, v8, v10}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;Z)Landroidx/compose/ui/Modifier;    # attach swipe up listener
  
      move-result-object v0
-@@ -2427,6 +2406,12 @@
-     move-object/from16 v16, v9
-
-     .line 99
-+    move-object/from16 v9, v25    # same SheetState used by the modal sheet
-+
-+    invoke-static {v5, v6, v9}, Lradiant/MiniPlayerGestures;->rootModifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;    # continue drag after player recomposition
-+
-+    move-result-object v5
-+
-     invoke-static {v15, v5}, Landroidx/compose/ui/ComposedModifierKt;->materializeModifier(Landroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
-
-     move-result-object v9
 
 --- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali

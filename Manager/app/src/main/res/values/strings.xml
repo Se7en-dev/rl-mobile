@@ -295,6 +295,8 @@
   <string name="patch_mini_player_redesign_desc">Integrates the Seekbar into the control panel at the bottom of the screen.</string>
   <string name="patch_mini_player_gestures_title">Mini-Player Gestures</string>
   <string name="patch_mini_player_gestures_desc">Swipe up on the mini-player to open the full player.</string>
+  <string name="patch_mini_player_drag_title">Enable Drag</string>
+  <string name="patch_mini_player_drag_desc">Makes player follow your finger when swiping up. Disable if Android gesture navigation conflicts.</string>
   <string name="patch_mini_player_left_right_gestures_title">Next/Previous Gestures</string>
   <string name="patch_mini_player_left_right_gestures_desc">Swipe left or right on the mini-player to skip tracks.</string>
   <string name="patch_mini_player_dynamic_bg_title">Mini-Player Dynamic Background</string>

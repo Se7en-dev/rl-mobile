@@ -175,6 +175,15 @@
         },
         {
           "type": "toggle",
+          "key": "swipe_up_drag",
+          "title": "Enable Drag",
+          "description": "Makes player follow your finger when swiping up. Disable if Android gesture navigation conflicts.",
+          "default": true,
+          "requiresOption": "gestures",
+          "token": "RL_MINI_PLAYER_SWIPE_UP_DRAG"
+        },
+        {
+          "type": "toggle",
           "key": "next_prev",
           "title": "Next/Previous Gestures",
           "description": "Swipe left or right on the mini-player to skip tracks.",

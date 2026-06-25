@@ -535,12 +535,12 @@
     return p0
 .end method
 
-.method public static modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;)Landroidx/compose/ui/Modifier;
+.method public static modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;Z)Landroidx/compose/ui/Modifier;
     .locals 1
 
     new-instance v0, Lradiant/MiniPlayerGestures$Gesture;
 
-    invoke-direct {v0, p1, p2}, Lradiant/MiniPlayerGestures$Gesture;-><init>(Lyl0/l;Landroidx/compose/material3/SheetState;)V
+    invoke-direct {v0, p1, p2, p3}, Lradiant/MiniPlayerGestures$Gesture;-><init>(Lyl0/l;Landroidx/compose/material3/SheetState;Z)V
 
     invoke-static {p0, v0}, Landroidx/compose/ui/input/pointer/PointerInteropFilter_androidKt;->motionEventSpy(Landroidx/compose/ui/Modifier;Lyl0/l;)Landroidx/compose/ui/Modifier;
 
