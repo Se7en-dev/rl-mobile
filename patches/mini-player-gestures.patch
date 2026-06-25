@@ -13,40 +13,15 @@
      invoke-static {v15, v5}, Landroidx/compose/ui/ComposedModifierKt;->materializeModifier(Landroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
 
      move-result-object v9
-@@ -2832,27 +2838,7 @@
--    .line 150
--    sget-object v8, Lkotlin/u;->a:Lkotlin/u;
--
--    .line 151
--    invoke-interface {v15}, Landroidx/compose/runtime/Composer;->rememberedValue()Ljava/lang/Object;
--
--    move-result-object v10
--
--    .line 152
--    invoke-virtual/range {v22 .. v22}, Landroidx/compose/runtime/Composer$Companion;->getEmpty()Ljava/lang/Object;
--
--    move-result-object v11
--
--    if-ne v10, v11, :cond_48
--
--    .line 153
--    sget-object v10, Lcom/tidal/android/feature/appscaffold/ui/composable/AppScaffoldKt$AppScaffold$3$2$1$1;->a:Lcom/tidal/android/feature/appscaffold/ui/composable/AppScaffoldKt$AppScaffold$3$2$1$1;
--
--    invoke-interface {v15, v10}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V
--
--    .line 154
--    :cond_48
--    check-cast v10, Landroidx/compose/ui/input/pointer/PointerInputEventHandler;
--
--    invoke-static {v0, v8, v10}, Landroidx/compose/ui/input/pointer/SuspendingPointerInputFilterKt;->pointerInput(Landroidx/compose/ui/Modifier;Ljava/lang/Object;Landroidx/compose/ui/input/pointer/PointerInputEventHandler;)Landroidx/compose/ui/Modifier;
+@@ -2832,2 +2838,8 @@
 +    move-object/from16 v8, v25    # SheetState from AppScaffold
 +
 +    const/4 v10, __RL_MINI_PLAYER_SWIPE_UP_DRAG__    # Enable Drag option
 +
-+    invoke-static {v0, v6, v8, v10}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;Z)Landroidx/compose/ui/Modifier;    # attach swipe up listener
- 
-     move-result-object v0
-
++    invoke-static {v6, v8, v10}, Lradiant/MiniPlayerGestures;->configure(Lyl0/l;Landroidx/compose/material3/SheetState;Z)V
++
+     .line 150
+     sget-object v8, Lkotlin/u;->a:Lkotlin/u;
 --- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
 @@ -1243,5 +1243,21 @@
@@ -71,7 +46,15 @@
 +    invoke-static {v5}, Lradiant/MiniPlayerGestures;->setHasMiniPlayerMedia(Z)V
  
      invoke-virtual {v1}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
- 
+@@ -1748,3 +1764,7 @@
+     move-result-object v6
+-
++
++    invoke-static {v6}, Lradiant/MiniPlayerGestures;->trackAreaModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # attach swipe up listener
++
++    move-result-object v6
++
+     .line 38
 --- a/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
 +++ b/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
 @@ -210,8 +210,10 @@

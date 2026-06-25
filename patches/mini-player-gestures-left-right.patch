@@ -1,16 +1,14 @@
 --- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
-@@ -1746,6 +1746,10 @@
-     invoke-static {v9, v10, v15, v6, v8}, Landroidx/compose/foundation/layout/PaddingKt;->padding-qDBjuR0(Landroidx/compose/ui/Modifier;FFFF)Landroidx/compose/ui/Modifier;
- 
+@@ -1768,3 +1768,7 @@
      move-result-object v6
+-
 +
 +    invoke-static {v6, v1}, Lradiant/MiniPlayerTrackGestures;->trackModifier(Landroidx/compose/ui/Modifier;Lyl0/l;)Landroidx/compose/ui/Modifier; # attach horizontal swipe listener
 +
 +    move-result-object v6
- 
++
      .line 38
-     sget-object v21, Landroidx/compose/ui/Alignment;->Companion:Landroidx/compose/ui/Alignment$Companion;
 @@ -1884,5 +1888,5 @@
      .line 56
      iget-object v6, v0, Lcom/tidal/android/feature/appscaffold/ui/s;->b:Lcom/tidal/android/feature/appscaffold/ui/p;

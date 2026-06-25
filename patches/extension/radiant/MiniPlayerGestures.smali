@@ -50,6 +50,13 @@
 # Mini player media state
 .field private static r:Z
 
+# AppScaffold context
+.field private static s:Lyl0/l;
+
+.field private static t:Landroidx/compose/material3/SheetState;
+
+.field private static u:Z
+
 
 # direct methods
 .method private constructor <init>()V
@@ -492,6 +499,18 @@
     return-void
 .end method
 
+.method public static configure(Lyl0/l;Landroidx/compose/material3/SheetState;Z)V
+    .locals 0
+
+    sput-object p0, Lradiant/MiniPlayerGestures;->s:Lyl0/l;
+
+    sput-object p1, Lradiant/MiniPlayerGestures;->t:Landroidx/compose/material3/SheetState;
+
+    sput-boolean p2, Lradiant/MiniPlayerGestures;->u:Z
+
+    return-void
+.end method
+
 .method private static clampReleaseVelocity(F)F
     .locals 4
 
@@ -546,6 +565,27 @@
 
     move-result-object p0
 
+    return-object p0
+.end method
+
+.method public static trackAreaModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+    .locals 3
+
+    sget-object v0, Lradiant/MiniPlayerGestures;->s:Lyl0/l;
+
+    if-eqz v0, :done
+
+    sget-object v1, Lradiant/MiniPlayerGestures;->t:Landroidx/compose/material3/SheetState;
+
+    if-eqz v1, :done
+
+    sget-boolean v2, Lradiant/MiniPlayerGestures;->u:Z
+
+    invoke-static {p0, v0, v1, v2}, Lradiant/MiniPlayerGestures;->modifier(Landroidx/compose/ui/Modifier;Lyl0/l;Landroidx/compose/material3/SheetState;Z)Landroidx/compose/ui/Modifier;
+
+    move-result-object p0
+
+    :done
     return-object p0
 .end method
 
