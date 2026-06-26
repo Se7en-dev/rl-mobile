@@ -52,6 +52,10 @@ data class PatchOptions(
     fun sliderValue(spec: PatchSpec, option: OptionSpec.Slider): Float =
         (optionFloats["${spec.id}/${option.key}"] ?: option.default).coerceIn(option.min, option.max)
 
+    fun choiceIndex(spec: PatchSpec, option: OptionSpec.Choice): Int =
+        (optionInts["${spec.id}/${option.key}"] ?: option.defaultIndex)
+            .coerceIn(0, option.entries.lastIndex.coerceAtLeast(0))
+
     fun isToggleOn(spec: PatchSpec, option: OptionSpec.Toggle): Boolean =
         optionBools["${spec.id}/${option.key}"] ?: option.default
 
@@ -121,7 +125,16 @@ data class PatchOptions(
                         val encode = option.encode ?: continue
                         put("__${token}__", encode.encode(sliderValue(spec, option)))
                     }
-                    is OptionSpec.Choice -> Unit
+                    is OptionSpec.Choice -> {
+                        val token = option.token ?: continue
+                        val gatedOff = option.requiresOption?.let { key ->
+                            spec.advancedOptions.filterIsInstance<OptionSpec.Toggle>()
+                                .firstOrNull { it.key == key }
+                                ?.let { !isToggleOn(spec, it) }
+                        } ?: false
+                        val index = if (gatedOff) 0 else choiceIndex(spec, option)
+                        put("__${token}__", option.values.getOrNull(index) ?: continue)
+                    }
                 }
             }
         }

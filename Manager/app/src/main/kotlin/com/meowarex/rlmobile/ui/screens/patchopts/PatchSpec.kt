@@ -98,10 +98,13 @@ sealed interface OptionSpec {
     @SerialName("choice")
     data class Choice(
         override val key: String,
-        override val title: String,
+        override val title: String = "",
         override val description: String = "",
         val entries: List<String> = emptyList(),
         val defaultIndex: Int = 0,
+        val values: List<String> = emptyList(),
+        val requiresOption: String? = null,
+        val token: String? = null,
     ) : OptionSpec
 }
 
@@ -187,6 +190,9 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
         description = resolve(descRes),
         entries = entries.map { resolve(it.labelRes) },
         defaultIndex = defaultIndex,
+        values = entries.map { it.value ?: "" },
+        requiresOption = requiresOption,
+        token = token,
     )
 }
 

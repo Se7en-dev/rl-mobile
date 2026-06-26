@@ -62,9 +62,12 @@ sealed interface PatchOption {
         @StringRes override val descRes: Int,
         val entries: List<ChoiceEntry>,
         val defaultIndex: Int = 0,
+        val requiresOption: String? = null,
+        val token: String? = null,
     ) : PatchOption
 }
 
 data class ChoiceEntry(
     @StringRes val labelRes: Int,
+    val value: String? = null,
 )

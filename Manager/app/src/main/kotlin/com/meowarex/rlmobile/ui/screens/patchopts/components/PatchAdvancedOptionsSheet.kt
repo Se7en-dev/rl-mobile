@@ -1,5 +1,8 @@
 package com.meowarex.rlmobile.ui.screens.patchopts.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -11,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -87,18 +91,91 @@ fun PatchAdvancedOptionsSheet(
 
             HorizontalDivider()
 
-            val sheetOptions = patch.advancedOptions.filter { it !is OptionSpec.Toggle || !it.inline }
+            val parentKeys = patch.advancedOptions
+                .filterIsInstance<OptionSpec.Toggle>()
+                .filter { !it.inline }
+                .map { it.key }
+                .toSet()
+            val sheetOptions = patch.advancedOptions.filter { option ->
+                when {
+                    option is OptionSpec.Toggle && option.inline -> false
+                    option is OptionSpec.Toggle && option.requiresOption in parentKeys -> false
+                    else -> true
+                }
+            }
             for (option in sheetOptions) key(option.key) {
                 val lock = patch.optionLock(option, selectedVariant) { state.toggle(patch, it) }
                 when (option) {
-                    is OptionSpec.Toggle -> ToggleOptionRow(
-                        title = option.title,
-                        description = option.description,
-                        checked = state.toggle(patch, option),
-                        onCheckedChange = { state.setToggle(patch, option, it) },
-                        locked = lock != OptionLock.Free,
-                        onLockedTap = { lockDialog = lock },
-                    )
+                    is OptionSpec.Toggle -> {
+                        val toggleOn = state.toggle(patch, option)
+                        val gatedChoices = patch.advancedOptions.filterIsInstance<OptionSpec.Choice>()
+                            .filter { it.requiresOption == option.key }
+                        val gatedToggles = patch.advancedOptions.filterIsInstance<OptionSpec.Toggle>()
+                            .filter { it.requiresOption == option.key && !it.inline }
+                        val hasSubOptions = gatedChoices.isNotEmpty() || gatedToggles.isNotEmpty()
+                        val carded = hasSubOptions && toggleOn
+
+                        Column(
+                            modifier = if (carded) {
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f))
+                                    .border(
+                                        width = 1.5.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+                                        shape = MaterialTheme.shapes.medium,
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                            } else {
+                                Modifier.fillMaxWidth()
+                            },
+                        ) {
+                            ToggleOptionRow(
+                                title = option.title,
+                                description = option.description,
+                                checked = toggleOn,
+                                onCheckedChange = { state.setToggle(patch, option, it) },
+                                locked = lock != OptionLock.Free,
+                                onLockedTap = { lockDialog = lock },
+                                modifier = if (hasSubOptions) Modifier.padding(vertical = 6.dp) else Modifier,
+                            )
+                            if (hasSubOptions) {
+                                AnimatedVisibility(visible = toggleOn) {
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 8.dp),
+                                    ) {
+                                        gatedChoices.forEach { choice ->
+                                            key(choice.key) {
+                                                ChoiceOptionRow(
+                                                    title = choice.title,
+                                                    entries = choice.entries,
+                                                    selectedIndex = state.choice(patch, choice),
+                                                    onSelect = { state.setChoice(patch, choice, it) },
+                                                )
+                                            }
+                                        }
+                                        gatedToggles.forEach { sub ->
+                                            key(sub.key) {
+                                                val subLock = patch.optionLock(sub, selectedVariant) { state.toggle(patch, it) }
+                                                ToggleOptionRow(
+                                                    title = sub.title,
+                                                    description = sub.description,
+                                                    checked = state.toggle(patch, sub),
+                                                    onCheckedChange = { state.setToggle(patch, sub, it) },
+                                                    locked = subLock != OptionLock.Free,
+                                                    onLockedTap = { lockDialog = subLock },
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     is OptionSpec.Slider -> SliderOptionRow(
                         title = option.title,
@@ -110,13 +187,15 @@ fun PatchAdvancedOptionsSheet(
                         onValueChange = { state.setSlider(patch, option, it) },
                     )
 
-                    is OptionSpec.Choice -> ChoiceOptionRow(
-                        title = option.title,
-                        description = option.description,
-                        entries = option.entries,
-                        selectedIndex = state.choice(patch, option),
-                        onSelect = { state.setChoice(patch, option, it) },
-                    )
+                    is OptionSpec.Choice ->
+                        if (option.requiresOption == null) {
+                            ChoiceOptionRow(
+                                title = option.title,
+                                entries = option.entries,
+                                selectedIndex = state.choice(patch, option),
+                                onSelect = { state.setChoice(patch, option, it) },
+                            )
+                        }
                 }
             }
 
@@ -147,13 +226,14 @@ private fun ToggleOptionRow(
     onCheckedChange: (Boolean) -> Unit,
     locked: Boolean = false,
     onLockedTap: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember(::MutableInteractionSource)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
@@ -279,18 +359,25 @@ private fun snapToNearestStep(
 
 @Composable
 private fun ChoiceOptionRow(
-    title: String,
-    description: String,
     entries: List<String>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
+    title: String = "",
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        OptionText(title = title, description = description)
-
+        if (title.isNotEmpty()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             entries.forEachIndexed { index, entry ->
                 SegmentedButton(
