@@ -95,6 +95,18 @@ enum class KnownPatch(
                 token = "RL_SCRIM_ARGB",
                 encode = SmaliEncode(EncodeKind.ArgbAlpha),
             ),
+            PatchOption.Toggle(
+                key = "cover_everywhere",
+                titleRes = R.string.patch_cover_everywhere_title,
+                descRes = R.string.patch_cover_everywhere_desc,
+                default = false,
+                inline = true,
+                fileNames = listOf(
+                    "home-backdrop.patch",
+                    "collection-backdrop.patch",
+                    "cover-capture.patch",
+                ),
+            ),
         ),
     ),
     QualityBadgeColors(
@@ -109,17 +121,6 @@ enum class KnownPatch(
         fileNames = listOf("player-one-handed.patch"),
         titleRes = R.string.patch_player_one_handed_title,
         descRes = R.string.patch_player_one_handed_desc,
-        default = Disabled,
-    ),
-    CoverEverywhere(
-        order = 35,
-        fileNames = listOf(
-            "home-backdrop.patch",
-            "collection-backdrop.patch",
-            "cover-capture.patch",
-        ),
-        titleRes = R.string.patch_cover_everywhere_title,
-        descRes = R.string.patch_cover_everywhere_desc,
         default = Disabled,
     ),
     DebugMenuUnlock(
@@ -246,7 +247,6 @@ enum class KnownPatch(
             PlayerBackdrop,
             QualityBadgeColors,
             LyricsProgressPill,
-            CoverEverywhere,
             MiniPlayerRedesign,
         ),
     );

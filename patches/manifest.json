@@ -18,7 +18,6 @@
         "PlayerBackdrop",
         "QualityBadgeColors",
         "LyricsProgressPill",
-        "CoverEverywhere",
         "MiniPlayerRedesign"
       ]
     },
@@ -63,16 +62,17 @@
           "displayAsPercent": true,
           "token": "RL_SCRIM_ARGB",
           "encode": { "kind": "argbAlpha" }
+        },
+        {
+          "type": "toggle",
+          "key": "cover_everywhere",
+          "title": "Cover Everywhere - WIP",
+          "description": "Applies the blurred backdrop to every Compose based page (Home & Collection)",
+          "default": false,
+          "inline": true,
+          "fileNames": ["home-backdrop.patch", "collection-backdrop.patch", "cover-capture.patch"]
         }
       ]
-    },
-    {
-      "id": "CoverEverywhere",
-      "order": 35,
-      "fileNames": ["home-backdrop.patch", "collection-backdrop.patch", "cover-capture.patch"],
-      "title": "Cover Everywhere - WIP",
-      "description": "Applies the blurred backdrop to every Compose based page (Home & Collection)",
-      "default": false
     },
     {
       "id": "QualityBadgeColors",
