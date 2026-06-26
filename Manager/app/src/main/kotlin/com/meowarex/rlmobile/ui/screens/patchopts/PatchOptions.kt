@@ -111,10 +111,18 @@ data class PatchOptions(
         for (spec in specs) {
             if (!isEnabled(spec)) continue
             for (option in spec.advancedOptions) {
-                if (option !is OptionSpec.Slider) continue
-                val token = option.token ?: continue
-                val encode = option.encode ?: continue
-                put("__${token}__", encode.encode(sliderValue(spec, option)))
+                when (option) {
+                    is OptionSpec.Toggle -> {
+                        val token = option.token ?: continue
+                        put("__${token}__", if (isToggleActive(spec, option)) "0x1" else "0x0")
+                    }
+                    is OptionSpec.Slider -> {
+                        val token = option.token ?: continue
+                        val encode = option.encode ?: continue
+                        put("__${token}__", encode.encode(sliderValue(spec, option)))
+                    }
+                    is OptionSpec.Choice -> Unit
+                }
             }
         }
     }

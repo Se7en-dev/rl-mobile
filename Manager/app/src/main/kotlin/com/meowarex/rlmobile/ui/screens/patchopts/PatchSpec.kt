@@ -68,6 +68,8 @@ sealed interface OptionSpec {
         val hidesVariants: List<Int> = emptyList(),
         /** Variant title overrides (index -> title) applied while this toggle is on. */
         val relabelVariants: Map<Int, String> = emptyMap(),
+        /** Placeholder name (without the surrounding `__`) baked into the `.patch` files. */
+        val token: String? = null,
     ) : OptionSpec
 
     @Immutable
@@ -162,6 +164,7 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
         requiresOption = requiresOption,
         hidesVariants = hidesVariants,
         relabelVariants = relabelVariants.mapValues { resolve(it.value) },
+        token = token,
     )
 
     is PatchOption.Slider -> OptionSpec.Slider(

@@ -193,9 +193,19 @@ enum class KnownPatch(
                 extensionFiles = listOf(
                     "radiant/MiniPlayerGestures.smali",
                     "radiant/MiniPlayerGestures\$Gesture.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackLayer.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackResetAnimator.smali",
                     "radiant/MiniPlayerGestures\$RootGesture.smali",
                     "radiant/MiniPlayerGestures\$ApplyPending.smali",
                 ),
+            ),
+            PatchOption.Toggle(
+                key = "swipe_up_drag",
+                titleRes = R.string.patch_mini_player_drag_title,
+                descRes = R.string.patch_mini_player_drag_desc,
+                default = true,
+                requiresOption = "gestures",
+                token = "RL_MINI_PLAYER_SWIPE_UP_DRAG",
             ),
             // Swipe left/right to skip
             PatchOption.Toggle(
