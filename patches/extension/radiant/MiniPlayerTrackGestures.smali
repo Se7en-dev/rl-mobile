@@ -126,6 +126,8 @@
 .method public static beginDrag(FF)V
     .locals 2
 
+    invoke-static {}, Lradiant/MiniPlayerGestures;->resetGestureLock()V
+
     sput p0, Lradiant/MiniPlayerTrackGestures;->e:F
 
     sput p1, Lradiant/MiniPlayerTrackGestures;->f:F
@@ -187,6 +189,24 @@
 
 .method public static finishDrag(FF)I
     .locals 5
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->isAnyDragging()Z
+
+    move-result v0
+
+    if-eqz v0, :check_active
+
+    const/4 v0, 0x0
+
+    sput-boolean v0, Lradiant/MiniPlayerTrackGestures;->g:Z
+
+    sput-boolean v0, Lradiant/MiniPlayerTrackGestures;->h:Z
+
+    invoke-static {}, Lradiant/MiniPlayerTrackGestures;->animateReset()V
+
+    return v0
+
+    :check_active
 
     sget-boolean v0, Lradiant/MiniPlayerTrackGestures;->g:Z
 
@@ -336,17 +356,38 @@
     goto :done
 
     :accept
+    invoke-static {}, Lradiant/MiniPlayerGestures;->lockHorizontalGesture()Z
+
+    move-result v2
+
+    if-eqz v2, :cancel_locked
+
     const/4 v2, 0x1
 
     sput-boolean v2, Lradiant/MiniPlayerTrackGestures;->h:Z
 
     :publish
+    const/4 v2, 0x0
+
+    invoke-static {v2}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackDirect(F)V
+
     invoke-static {}, Lradiant/MiniPlayerTrackGestures;->suppressTapOpen()V
 
     invoke-static {p0}, Lradiant/MiniPlayerTrackGestures;->setDragOffset(F)V
 
     :done
     return-void
+
+    :cancel_locked
+    const/4 v0, 0x0
+
+    sput-boolean v0, Lradiant/MiniPlayerTrackGestures;->g:Z
+
+    sput-boolean v0, Lradiant/MiniPlayerTrackGestures;->h:Z
+
+    invoke-static {}, Lradiant/MiniPlayerTrackGestures;->animateReset()V
+
+    goto :done
 .end method
 
 .method private static dp(F)F

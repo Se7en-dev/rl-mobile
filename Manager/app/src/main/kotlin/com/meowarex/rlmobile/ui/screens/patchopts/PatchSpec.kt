@@ -68,6 +68,8 @@ sealed interface OptionSpec {
         val hidesVariants: List<Int> = emptyList(),
         /** Variant title overrides (index -> title) applied while this toggle is on. */
         val relabelVariants: Map<Int, String> = emptyMap(),
+        /** Placeholder name (without the surrounding `__`) baked into the `.patch` files. */
+        val token: String? = null,
     ) : OptionSpec
 
     @Immutable
@@ -96,10 +98,13 @@ sealed interface OptionSpec {
     @SerialName("choice")
     data class Choice(
         override val key: String,
-        override val title: String,
+        override val title: String = "",
         override val description: String = "",
         val entries: List<String> = emptyList(),
         val defaultIndex: Int = 0,
+        val values: List<String> = emptyList(),
+        val requiresOption: String? = null,
+        val token: String? = null,
     ) : OptionSpec
 }
 
@@ -162,6 +167,7 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
         requiresOption = requiresOption,
         hidesVariants = hidesVariants,
         relabelVariants = relabelVariants.mapValues { resolve(it.value) },
+        token = token,
     )
 
     is PatchOption.Slider -> OptionSpec.Slider(
@@ -184,6 +190,9 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
         description = resolve(descRes),
         entries = entries.map { resolve(it.labelRes) },
         defaultIndex = defaultIndex,
+        values = entries.map { it.value ?: "" },
+        requiresOption = requiresOption,
+        token = token,
     )
 }
 

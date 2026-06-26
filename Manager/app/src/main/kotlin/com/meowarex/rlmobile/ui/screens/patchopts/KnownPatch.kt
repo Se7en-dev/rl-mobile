@@ -148,15 +148,15 @@ enum class KnownPatch(
         default = Disabled,
         defaultVariantIndex = 2,
         variants = listOf(
-            PatchVariant( // 0: Floating — stock rounded pill (no patch; the progress border is an option)
+            PatchVariant( // 0: Floating — stock rounded pill
                 titleRes = R.string.patch_mini_player_variant_floating_title,
                 fileNames = emptyList(),
             ),
-            PatchVariant( // 1: Grey — square, theme background (shown as "Legacy" when Dynamic BG is on)
+            PatchVariant( // 1: Grey — square
                 titleRes = R.string.patch_mini_player_variant_square_grey_title,
                 fileNames = listOf("mini-player-grey.patch"),
             ),
-            PatchVariant( // 2: Black — square, forced black background (hidden when Dynamic BG is on)
+            PatchVariant( // 2: Black — square black background
                 titleRes = R.string.patch_mini_player_variant_square_black_title,
                 fileNames = listOf("mini-player-black.patch"),
             ),
@@ -193,9 +193,23 @@ enum class KnownPatch(
                 extensionFiles = listOf(
                     "radiant/MiniPlayerGestures.smali",
                     "radiant/MiniPlayerGestures\$Gesture.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackLayer.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackResetAnimator.smali",
                     "radiant/MiniPlayerGestures\$RootGesture.smali",
                     "radiant/MiniPlayerGestures\$ApplyPending.smali",
                 ),
+            ),
+            PatchOption.Choice(
+                key = "swipe_up_drag",
+                titleRes = R.string.patch_mini_player_drag_title,
+                descRes = R.string.patch_mini_player_drag_desc,
+                entries = listOf(
+                    ChoiceEntry(R.string.patch_mini_player_drag_static, value = "0x0"),
+                    ChoiceEntry(R.string.patch_mini_player_drag_drag, value = "0x1"),
+                ),
+                defaultIndex = 1,
+                requiresOption = "gestures",
+                token = "RL_MINI_PLAYER_SWIPE_UP_DRAG",
             ),
             // Swipe left/right to skip
             PatchOption.Toggle(
