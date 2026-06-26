@@ -193,6 +193,8 @@ enum class KnownPatch(
                 extensionFiles = listOf(
                     "radiant/MiniPlayerGestures.smali",
                     "radiant/MiniPlayerGestures\$Gesture.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackLayer.smali",
+                    "radiant/MiniPlayerGestures\$FeedbackResetAnimator.smali",
                     "radiant/MiniPlayerGestures\$RootGesture.smali",
                     "radiant/MiniPlayerGestures\$ApplyPending.smali",
                 ),

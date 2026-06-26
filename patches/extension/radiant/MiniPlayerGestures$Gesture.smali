@@ -199,6 +199,8 @@
 
     # ACTION_DOWN
     :down
+    invoke-static {}, Lradiant/MiniPlayerGestures;->resetGestureLock()V
+
     invoke-static {p1}, Lradiant/MiniPlayerGestures;->beginMotion(Landroid/view/MotionEvent;)V
 
     invoke-virtual {p1}, Landroid/view/MotionEvent;->getRawY()F
@@ -230,6 +232,12 @@
     const/4 v0, 0x0
 
     iput-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->j:Z
+
+    iget v0, p0, Lradiant/MiniPlayerGestures$Gesture;->b:F
+
+    invoke-static {v0}, Lradiant/MiniPlayerGestures;->beginSwipeGesture(F)V
+
+    :skip_feedback_down
 
     goto :done
 
@@ -263,11 +271,16 @@
 
     if-eqz v3, :maybe_start
 
+    invoke-static {}, Lradiant/MiniPlayerGestures;->suppressHorizontalGestures()V
+
     iget-boolean v3, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
 
-    if-eqz v3, :store_last
+    if-eqz v3, :feedback_active
 
     invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->dragSheet(FJ)V
+
+    :feedback_active
+    invoke-static {v2}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackFromDrag(F)V
 
     goto :store_last
 
@@ -295,27 +308,59 @@
 
     move-result v8
 
-    const/high16 v9, 0x41800000    # 16.0f
+    const/high16 v9, 0x40c00000    # 6.0f axis deadzone
 
     invoke-static {v9}, Lradiant/MiniPlayerGestures$Gesture;->dp(F)F
 
     move-result v9
 
+    invoke-static {}, Lradiant/MiniPlayerGestures;->isHorizontalGestureLocked()Z
+
+    move-result v10
+
+    if-eqz v10, :horizontal_check
+
+    const/4 v10, 0x0
+
+    invoke-static {v10}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackDirect(F)V
+
+    goto :store_last
+
+    :horizontal_check
+
     cmpg-float v10, v7, v9
 
-    if-gez v10, :vertical_check
+    if-gez v10, :horizontal_dominance
 
-    const/high16 v10, 0x3fc00000    # 1.5f
+    goto :vertical_check
+
+    :horizontal_dominance
+
+    const v10, 0x3f8ccccd    # 1.1f
 
     mul-float/2addr v10, v8
 
-    cmpl-float v10, v7, v10
+    cmpg-float v10, v7, v10
 
-    if-lez v10, :vertical_check
+    if-gez v10, :horizontal_wins
+
+    goto :vertical_check
+
+    :horizontal_wins
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->lockHorizontalGesture()Z
+
+    move-result v10
+
+    if-eqz v10, :store_last
 
     const/4 v10, 0x1
 
     iput-boolean v10, p0, Lradiant/MiniPlayerGestures$Gesture;->j:Z
+
+    const/4 v10, 0x0
+
+    invoke-static {v10}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackDirect(F)V
 
     goto :store_last
 
@@ -327,10 +372,12 @@
 
     if-lez v10, :vertical_dominance
 
+    invoke-static {v2}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackFromDrag(F)V
+
     goto :store_last
 
     :vertical_dominance
-    const/high16 v10, 0x3fc00000    # 1.5f -> has to dominate horizontal mov. by 1.5x
+    const v10, 0x3f8ccccd    # 1.1f -> early vertical axis lock
 
     mul-float/2addr v7, v10
 
@@ -341,13 +388,28 @@
     goto :store_last
 
     :begin
-    invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->startSheet(FJ)V
+    invoke-static {}, Lradiant/MiniPlayerGestures;->lockVerticalGesture()Z
 
-    iget-boolean v10, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+    move-result v10
 
     if-eqz v10, :store_last
 
+    invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->startSheet(FJ)V
+
+    iget-boolean v10, p0, Lradiant/MiniPlayerGestures$Gesture;->e:Z
+
+    if-eqz v10, :store_last
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->suppressHorizontalGestures()V
+
+    iget-boolean v10, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
+
+    if-eqz v10, :feedback_begin
+
     invoke-direct {p0, v2, v5, v6}, Lradiant/MiniPlayerGestures$Gesture;->dragSheet(FJ)V
+
+    :feedback_begin
+    invoke-static {v2}, Lradiant/MiniPlayerGestures;->setSwipeFeedbackFromDrag(F)V
 
 
     :store_last
@@ -363,7 +425,7 @@
 
     iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->e:Z
 
-    if-eqz v0, :finish
+    if-eqz v0, :up_no_drag
 
     iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->k:Z
 
@@ -389,10 +451,27 @@
 
     invoke-direct {p0, v0}, Lradiant/MiniPlayerGestures$Gesture;->finishSheet(F)V
 
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
+
+    goto :finish
+
+    :up_no_drag
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
+
     goto :finish
 
     :open_simple
-    invoke-direct {p0}, Lradiant/MiniPlayerGestures$Gesture;->openPlayer()V
+    invoke-static {}, Lradiant/MiniPlayerGestures;->suppressHorizontalGestures()V
+
+    invoke-virtual {p1}, Landroid/view/MotionEvent;->getRawY()F
+
+    move-result v0
+
+    iget-object v1, p0, Lradiant/MiniPlayerGestures$Gesture;->a:Lyl0/l;
+
+    invoke-static {v1, v0}, Lradiant/MiniPlayerGestures;->completeSimpleSwipe(Lyl0/l;F)Z
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
 
 
     :finish
@@ -404,13 +483,20 @@
     :cancel
     iget-boolean v0, p0, Lradiant/MiniPlayerGestures$Gesture;->e:Z
 
-    if-eqz v0, :cancel_reset
+    if-eqz v0, :cancel_no_active
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
 
     iget-object v0, p0, Lradiant/MiniPlayerGestures$Gesture;->f:Landroidx/compose/material3/SheetState;
 
     iget-object v1, p0, Lradiant/MiniPlayerGestures$Gesture;->a:Lyl0/l;
 
     invoke-static {v0, v1}, Lradiant/MiniPlayerGestures;->cancelDrag(Landroidx/compose/material3/SheetState;Lyl0/l;)V
+
+    goto :cancel_reset
+
+    :cancel_no_active
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
 
     :cancel_reset
     invoke-direct {p0}, Lradiant/MiniPlayerGestures$Gesture;->reset()V

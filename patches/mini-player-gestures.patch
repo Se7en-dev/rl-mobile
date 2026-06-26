@@ -44,17 +44,30 @@
 +
 +    :rl_set_media
 +    invoke-static {v5}, Lradiant/MiniPlayerGestures;->setHasMiniPlayerMedia(Z)V
- 
-     invoke-virtual {v1}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-@@ -1748,3 +1764,7 @@
-     move-result-object v6
 -
 +
+     invoke-virtual {v1}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
+@@ -1750,2 +1766,6 @@
 +    invoke-static {v6}, Lradiant/MiniPlayerGestures;->trackAreaModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # attach swipe up listener
 +
 +    move-result-object v6
 +
      .line 38
+     sget-object v21, Landroidx/compose/ui/Alignment;->Companion:Landroidx/compose/ui/Alignment$Companion;
+@@ -1923,2 +1943,6 @@
++    invoke-static {v4}, Lradiant/MiniPlayerGestures;->feedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move cover (swipe up feedback)
++
++    move-result-object v4
++
+     .line 63
+     invoke-virtual/range {v22 .. v22}, Lcom/squareup/ui/market/core/theme/MarketStylesheet$c;->p0()Lc20/a;
+@@ -2034,2 +2058,6 @@
++    invoke-static {v4}, Lradiant/MiniPlayerGestures;->feedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move title/artist (swipe up feedback)
++
++    move-result-object v4
++
+     .line 72
+     invoke-virtual/range {p2 .. p2}, Landroidx/compose/foundation/layout/Arrangement;->getTop()Landroidx/compose/foundation/layout/Arrangement$Vertical;
 --- a/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
 +++ b/androidx/compose/material3/ModalBottomSheetKt$ModalBottomSheet$4$1.smali
 @@ -210,8 +210,10 @@

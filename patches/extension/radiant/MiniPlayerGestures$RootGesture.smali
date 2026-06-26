@@ -40,15 +40,15 @@
 
     iget-object v0, p0, Lradiant/MiniPlayerGestures$RootGesture;->b:Landroidx/compose/material3/SheetState;
 
-    invoke-static {v0}, Lradiant/MiniPlayerGestures;->isDragging(Landroidx/compose/material3/SheetState;)Z
-
-    move-result v1
-
-    if-eqz v1, :done
-
     invoke-virtual {p1}, Landroid/view/MotionEvent;->getActionMasked()I
 
     move-result v1
+
+    invoke-static {v0}, Lradiant/MiniPlayerGestures;->isDragging(Landroidx/compose/material3/SheetState;)Z
+
+    move-result v2
+
+    if-eqz v2, :maybe_reset_only
 
     const/4 v2, 0x1
 
@@ -63,6 +63,51 @@
     if-eq v1, v2, :cancel
 
     goto :done
+
+    :maybe_reset_only
+    const/4 v2, 0x1
+
+    if-eq v1, v2, :simple_up
+
+    const/4 v2, 0x3
+
+    if-eq v1, v2, :reset_only
+
+    const/4 v2, 0x2
+
+    if-eq v1, v2, :simple_move
+
+    goto :done
+
+    :reset_only
+    invoke-static {}, Lradiant/MiniPlayerGestures;->resetGestureLock()V
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
+
+    goto :done
+
+    :simple_move
+    invoke-virtual {p1}, Landroid/view/MotionEvent;->getRawY()F
+
+    move-result v1
+
+    invoke-static {v1}, Lradiant/MiniPlayerGestures;->updateSimpleSwipe(F)Z
+
+    goto :done
+
+    :simple_up
+    invoke-virtual {p1}, Landroid/view/MotionEvent;->getRawY()F
+
+    move-result v1
+
+    iget-object v2, p0, Lradiant/MiniPlayerGestures$RootGesture;->a:Lyl0/l;
+
+    invoke-static {v2, v1}, Lradiant/MiniPlayerGestures;->completeSimpleSwipe(Lyl0/l;F)Z
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
+
+    goto :done
+
 
     # ACTION_MOVE
     :move
@@ -102,6 +147,8 @@
 
     invoke-static {v0, v2, v1}, Lradiant/MiniPlayerGestures;->finishDrag(Landroidx/compose/material3/SheetState;Lyl0/l;F)V
 
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
+
     goto :done
 
     # ACTION_CANCEL
@@ -109,6 +156,8 @@
     iget-object v2, p0, Lradiant/MiniPlayerGestures$RootGesture;->a:Lyl0/l;
 
     invoke-static {v0, v2}, Lradiant/MiniPlayerGestures;->cancelDrag(Landroidx/compose/material3/SheetState;Lyl0/l;)V
+
+    invoke-static {}, Lradiant/MiniPlayerGestures;->animateSwipeFeedbackReset()V
 
     :done
     sget-object p1, Lkotlin/u;->a:Lkotlin/u;
