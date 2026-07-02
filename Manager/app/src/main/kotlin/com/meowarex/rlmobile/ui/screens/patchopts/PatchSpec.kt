@@ -187,7 +187,7 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
     is PatchOption.Choice -> OptionSpec.Choice(
         key = key,
         title = resolve(titleRes),
-        description = resolve(descRes),
+        description = if (descRes != 0) resolve(descRes) else "",
         entries = entries.map { resolve(it.labelRes) },
         defaultIndex = defaultIndex,
         values = entries.map { it.value ?: "" },

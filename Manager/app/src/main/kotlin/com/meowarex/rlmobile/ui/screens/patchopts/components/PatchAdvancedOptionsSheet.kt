@@ -378,6 +378,39 @@ private fun ChoiceOptionRow(
                 textAlign = TextAlign.Center,
             )
         }
+        if (entries.size > 3) {
+            var expanded by rememberSaveable { mutableStateOf(false) }
+            val selectedLabel = entries.getOrNull(selectedIndex).orEmpty()
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = selectedLabel,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    entries.forEachIndexed { index, entry ->
+                        DropdownMenuItem(
+                            text = { Text(entry) },
+                            onClick = {
+                                onSelect(index)
+                                expanded = false
+                            },
+                        )
+                    }
+                }
+            }
+            return@Column
+        }
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             entries.forEachIndexed { index, entry ->
                 SegmentedButton(

@@ -59,7 +59,7 @@ sealed interface PatchOption {
     data class Choice(
         override val key: String,
         @StringRes override val titleRes: Int,
-        @StringRes override val descRes: Int,
+        @StringRes override val descRes: Int = 0,
         val entries: List<ChoiceEntry>,
         val defaultIndex: Int = 0,
         val requiresOption: String? = null,

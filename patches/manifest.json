@@ -219,7 +219,22 @@
       "extensionFiles": ["radiant/WazeInitReceiver.smali", "radiant/WazeServiceConnection.smali"],
       "title": "Waze Integration",
       "description": "Control TIDAL playback from the Waze app",
-      "default": true
+      "default": true,
+      "advancedOptions": [
+        {
+          "type": "choice",
+          "key": "browse_root",
+          "title": "Media Menu",
+          "entries": ["Auto Menu", "Home", "Recents"],
+          "values": [
+            "ROOT_AUTO",
+            "HOME_V2::home_page_v2_id",
+            "RECENTLY_PLAYED::home/pages/CONTINUE_LISTEN_TO/view-all"
+          ],
+          "defaultIndex": 0,
+          "token": "RL_WAZE_ROOT_ID"
+        }
+      ]
     },
     {
       "id": "DebugMenuUnlock",
