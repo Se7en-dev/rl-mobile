@@ -106,6 +106,18 @@ sealed interface OptionSpec {
         val requiresOption: String? = null,
         val token: String? = null,
     ) : OptionSpec
+
+    @Immutable
+    @Serializable
+    @SerialName("color")
+    data class Color(
+        override val key: String,
+        override val title: String = "",
+        override val description: String = "",
+        val default: Int = 0,
+        /** Placeholder name (without the surrounding `__`) baked into the `.patch`/extension files. */
+        val token: String? = null,
+    ) : OptionSpec
 }
 
 @Serializable
@@ -194,6 +206,14 @@ private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (thi
         requiresOption = requiresOption,
         token = token,
     )
+
+    is PatchOption.Color -> OptionSpec.Color(
+        key = key,
+        title = resolve(titleRes),
+        description = if (descRes != 0) resolve(descRes) else "",
+        default = default,
+        token = token,
+    )
 }
 
 @Immutable
@@ -258,6 +278,8 @@ class PatchOptionState(
     val setSlider: (PatchSpec, OptionSpec.Slider, Float) -> Unit,
     val choice: (PatchSpec, OptionSpec.Choice) -> Int,
     val setChoice: (PatchSpec, OptionSpec.Choice, Int) -> Unit,
+    val color: (PatchSpec, OptionSpec.Color) -> Int,
+    val setColor: (PatchSpec, OptionSpec.Color, Int) -> Unit,
     val isModified: (PatchSpec) -> Boolean,
     val reset: (PatchSpec) -> Unit,
 ) {
@@ -270,6 +292,8 @@ class PatchOptionState(
             setSlider = { _, _, _ -> },
             choice = { _, option -> option.defaultIndex },
             setChoice = { _, _, _ -> },
+            color = { _, option -> option.default },
+            setColor = { _, _, _ -> },
             isModified = { false },
             reset = {},
         )

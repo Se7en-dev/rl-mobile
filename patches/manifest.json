@@ -233,6 +233,13 @@
           ],
           "defaultIndex": 0,
           "token": "RL_WAZE_ROOT_ID"
+        },
+        {
+          "type": "color",
+          "key": "accent_color",
+          "title": "Accent Color",
+          "default": -16747037,
+          "token": "RL_WAZE_THEME_COLOR"
         }
       ]
     },

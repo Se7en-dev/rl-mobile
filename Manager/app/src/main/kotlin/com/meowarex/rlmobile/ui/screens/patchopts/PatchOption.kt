@@ -65,6 +65,14 @@ sealed interface PatchOption {
         val requiresOption: String? = null,
         val token: String? = null,
     ) : PatchOption
+
+    data class Color(
+        override val key: String,
+        @StringRes override val titleRes: Int,
+        @StringRes override val descRes: Int = 0,
+        val default: Int,
+        val token: String? = null,
+    ) : PatchOption
 }
 
 data class ChoiceEntry(

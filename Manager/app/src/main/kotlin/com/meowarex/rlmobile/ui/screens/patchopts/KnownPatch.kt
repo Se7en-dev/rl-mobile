@@ -155,6 +155,12 @@ enum class KnownPatch(
                 defaultIndex = 0,
                 token = "RL_WAZE_ROOT_ID",
             ),
+            PatchOption.Color(
+                key = "accent_color",
+                titleRes = R.string.patch_waze_accent_color_title,
+                default = -16747037, // Waze default #ff0075e3
+                token = "RL_WAZE_THEME_COLOR",
+            ),
         ),
     ),
     LyricsProgressPill(

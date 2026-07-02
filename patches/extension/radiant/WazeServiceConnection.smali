@@ -97,7 +97,7 @@
 
     const-string v1, "themeColor"
 
-    const v2, -0xde0114    # TIDAL cyan #ff21feec
+    const v2, __RL_WAZE_THEME_COLOR__ # Waze SDK themeColor
 
     invoke-virtual {v0, v1, v2}, Landroid/os/Bundle;->putInt(Ljava/lang/String;I)V
 
