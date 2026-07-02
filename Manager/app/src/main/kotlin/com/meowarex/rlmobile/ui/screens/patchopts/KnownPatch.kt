@@ -130,6 +130,17 @@ enum class KnownPatch(
         descRes = R.string.patch_debug_menu_unlock_desc,
         default = Disabled,
     ),
+    WazeIntegration(
+        order = 90,
+        fileNames = listOf("waze-media-browser.patch"),
+        extensionFiles = listOf(
+            "radiant/WazeInitReceiver.smali",
+            "radiant/WazeServiceConnection.smali",
+        ),
+        titleRes = R.string.patch_waze_integration_title,
+        descRes = R.string.patch_waze_integration_desc,
+        default = Disabled,
+    ),
     LyricsProgressPill(
         order = 40,
         fileNames = listOf(

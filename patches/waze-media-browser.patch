@@ -1,0 +1,27 @@
+--- a/pb/c.smali
++++ b/pb/c.smali
+@@ -700,0 +701,24 @@
++    iget-object v15, v1, Lcom/aspiro/wamp/util/y$a;->b:Ljava/lang/String;
++
++    const-string/jumbo v14, "com.waze"
++
++    invoke-static {v15, v14}, Lkotlin/jvm/internal/n;->b(Ljava/lang/Object;Ljava/lang/Object;)Z # check caller
++
++    move-result v12
++
++    if-eqz v12, :rl_waze_done
++
++    iget-object v15, v1, Lcom/aspiro/wamp/util/y$a;->d:Ljava/lang/String; # caller cert
++
++    const-string v14, "03:63:7f:6c:5d:8f:60:4e:6f:db:79:a6:ff:bf:a5:78:de:4e:31:8f:8d:a2:2f:c6:10:66:65:24:7f:88:07:d7" # Waze cert
++
++    invoke-static {v15, v14}, Lkotlin/jvm/internal/n;->b(Ljava/lang/Object;Ljava/lang/Object;)Z # check cert
++
++    move-result v12 # cert match
++
++    if-eqz v12, :rl_waze_done # reject mismatch
++
++    goto :goto_9 # trust Waze
++
++    :rl_waze_done
++

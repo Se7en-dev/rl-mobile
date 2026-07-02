@@ -213,6 +213,15 @@
       "default": true
     },
     {
+      "id": "WazeIntegration",
+      "order": 90,
+      "fileNames": ["waze-media-browser.patch"],
+      "extensionFiles": ["radiant/WazeInitReceiver.smali", "radiant/WazeServiceConnection.smali"],
+      "title": "Waze Integration",
+      "description": "Control TIDAL playback from the Waze app",
+      "default": true
+    },
+    {
       "id": "DebugMenuUnlock",
       "order": 100,
       "fileNames": ["debug-menu-unlock.patch"],
