@@ -95,6 +95,12 @@
 
     invoke-virtual {v0, v1, v2}, Landroid/os/Bundle;->putInt(Ljava/lang/String;I)V
 
+    const-string v1, "themeColor"
+
+    const v2, -0xde0114    # TIDAL cyan #ff21feec
+
+    invoke-virtual {v0, v1, v2}, Landroid/os/Bundle;->putInt(Ljava/lang/String;I)V
+
     invoke-direct {p0, v0}, Lradiant/WazeServiceConnection;->addOpenMeIntent(Landroid/os/Bundle;)V
 
     return-object v0
