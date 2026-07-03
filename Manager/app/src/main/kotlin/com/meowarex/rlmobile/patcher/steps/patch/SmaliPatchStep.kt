@@ -95,7 +95,19 @@ class SmaliPatchStep(
                     val entry = zip.openEntry(patchFile)
                         ?: throw FileNotFoundException("Missing zip entry: $patchFile")
                     out.canonicalFile.parentFile?.mkdirs()
-                    out.writeBytes(entry.read())
+                    var smaliText = entry.read()
+                        .decodeToString()
+                        .replace("\r\n", "\n")
+                    for ((token, value) in substitutions) {
+                        if (smaliText.contains(token)) {
+                            smaliText = smaliText.replace(token, value)
+                            container.log("Applied substitution $token -> $value in $patchFile")
+                        }
+                    }
+                    UNRESOLVED_TOKEN.find(smaliText)?.let { match ->
+                        throw Error("Unresolved option placeholder ${match.value} in $patchFile")
+                    }
+                    out.writeText(smaliText)
                     container.log("Extracted extension smali: $relative")
                     continue
                 }

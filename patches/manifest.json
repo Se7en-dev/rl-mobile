@@ -213,6 +213,39 @@
       "default": true
     },
     {
+      "id": "WazeIntegration",
+      "order": 90,
+      "category": "integration",
+      "pathLocked": true,
+      "fileNames": ["waze-media-browser.patch"],
+      "extensionFiles": ["radiant/WazeInitReceiver.smali", "radiant/WazeServiceConnection.smali"],
+      "title": "Waze Integration",
+      "description": "Control TIDAL playback from the Waze app",
+      "default": true,
+      "advancedOptions": [
+        {
+          "type": "choice",
+          "key": "browse_root",
+          "title": "Media Menu",
+          "entries": ["Auto Menu", "Home", "Recents"],
+          "values": [
+            "ROOT_AUTO",
+            "HOME_V2::home_page_v2_id",
+            "RECENTLY_PLAYED::home/pages/CONTINUE_LISTEN_TO/view-all"
+          ],
+          "defaultIndex": 0,
+          "token": "RL_WAZE_ROOT_ID"
+        },
+        {
+          "type": "color",
+          "key": "accent_color",
+          "title": "Accent Color",
+          "default": -16747037,
+          "token": "RL_WAZE_THEME_COLOR"
+        }
+      ]
+    },
+    {
       "id": "DebugMenuUnlock",
       "order": 100,
       "fileNames": ["debug-menu-unlock.patch"],

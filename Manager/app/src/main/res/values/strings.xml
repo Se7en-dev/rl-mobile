@@ -252,9 +252,16 @@
   <string name="patchopts_patches_title">Patches</string>
   <string name="patchopts_patches_desc">Toggle which patches are applied during installation. Unchecked patches are skipped entirely.</string>
   <string name="patchopts_patches_summary">%1$d of %2$d enabled</string>
+  <string name="patchopts_integrations_title">Integrations</string>
+  <string name="patchopts_integrations_desc">Connect TIDAL to other systems/apps</string>
+  <string name="patchopts_pkgname_warning_title">Custom Package Name</string>
+  <string name="patchopts_pkgname_warning_msg">Installing under a package name other than &lt;b>%s&lt;/b> will block the following from working:</string>
+  <string name="patchopts_pkgname_warning_permanent">The package name is permanent once installed (requires a fresh install)</string>
   <string name="patchopts_advanced_button">Advanced Options</string>
   <string name="patchopts_advanced_sheet_label">Advanced Options</string>
   <string name="patchopts_toggle_snap">Toggle snapping to steps</string>
+  <string name="patchopts_field_unlock">Unlock editing</string>
+  <string name="patchopts_field_lock">Lock and reset to default</string>
 
   <string name="patch_lyrics_disable_cover_title">Disable Lyrics Cover</string>
   <string name="patch_lyrics_disable_cover_desc">Removes the mini track cover from the lyrics screen.</string>
@@ -286,6 +293,19 @@
   <string
     name="patch_debug_menu_unlock_desc"
   >Reveals TIDAL\'s hidden Debug Menu in Settings. (Unlocks Feature Flags &amp; the legacy Debug Options)</string>
+  <string name="patch_waze_integration_title">Waze Integration</string>
+  <string name="patch_waze_integration_desc">Control TIDAL playback from the Waze app</string>
+  <string name="patch_waze_browse_root_title">Media Menu</string>
+  <string name="patch_waze_accent_color_title">Accent Color</string>
+  <string name="patch_waze_color_waze_default">Waze Default</string>
+  <string name="patch_waze_color_tidal_cyan">TIDAL Cyan</string>
+  <string name="patch_waze_color_material_you">Material You</string>
+  <string name="patch_waze_root_auto">Auto Menu</string>
+  <string name="patch_waze_root_home">Home</string>
+  <string name="patch_waze_root_recents">Recents</string>
+  <string name="patch_color_picker_title">Custom color</string>
+  <string name="patch_color_picker_hex">Hex color</string>
+  <string name="patch_color_picker_hex_error">Use #RRGGBB or #AARRGGBB.</string>
   <string name="patch_enable_legacy_ui_title">Enable Legacy UI</string>
   <string
     name="patch_enable_legacy_ui_desc"
@@ -320,6 +340,8 @@
   <string name="patch_lock_blocked_title">Patch Blocked!</string>
   <string name="patch_lock_required_msg">Patch Required by &lt;b>%s&lt;/b>.</string>
   <string name="patch_lock_blocked_msg">Patch Blocked by &lt;b>%s&lt;/b>.</string>
+  <string name="patch_lock_pkgname_title">Original Package Name Invalid!</string>
+  <string name="patch_lock_pkgname_msg">This only works while the app keeps its original &lt;b>%s&lt;/b> package name. Reset the Package Name option to enable it.&lt;br/>&lt;br/>An existing install can\'t be renamed (requires a fresh install)</string>
   <string name="patch_opt_lock_title">Option Locked</string>
   <string name="patch_opt_lock_needs_variant">Requires the &lt;b>%s&lt;/b> style.</string>
   <string name="patch_opt_lock_needs_option">Requires the &lt;b>%s&lt;/b> option.</string>

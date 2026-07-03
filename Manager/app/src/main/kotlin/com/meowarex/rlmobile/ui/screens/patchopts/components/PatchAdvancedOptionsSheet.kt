@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,11 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -196,6 +202,12 @@ fun PatchAdvancedOptionsSheet(
                                 onSelect = { state.setChoice(patch, option, it) },
                             )
                         }
+
+                    is OptionSpec.Color -> ColorOptionRow(
+                        title = option.title,
+                        color = state.color(patch, option),
+                        onColorChange = { state.setColor(patch, option, it) },
+                    )
                 }
             }
 
@@ -378,6 +390,39 @@ private fun ChoiceOptionRow(
                 textAlign = TextAlign.Center,
             )
         }
+        if (entries.size > 3) {
+            var expanded by rememberSaveable { mutableStateOf(false) }
+            val selectedLabel = entries.getOrNull(selectedIndex).orEmpty()
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = selectedLabel,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    entries.forEachIndexed { index, entry ->
+                        DropdownMenuItem(
+                            text = { Text(entry) },
+                            onClick = {
+                                onSelect(index)
+                                expanded = false
+                            },
+                        )
+                    }
+                }
+            }
+            return@Column
+        }
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             entries.forEachIndexed { index, entry ->
                 SegmentedButton(
@@ -398,6 +443,150 @@ private fun ChoiceOptionRow(
             }
         }
     }
+}
+
+@Composable
+private fun ColorOptionRow(
+    title: String,
+    color: Int,
+    onColorChange: (Int) -> Unit,
+) {
+    var showPicker by rememberSaveable { mutableStateOf(false) }
+    val selectedColor = color.withOpaqueAlpha()
+    val materialYouColor = MaterialTheme.colorScheme.primary.toArgb().withOpaqueAlpha()
+    val presets = listOf(
+        stringResource(R.string.patch_waze_color_waze_default),
+        stringResource(R.string.patch_waze_color_tidal_cyan),
+        stringResource(R.string.patch_waze_color_material_you),
+    )
+    val presetColors = listOf(WAZE_DEFAULT, TIDAL_CYAN, materialYouColor)
+    val selectedPreset = presetColors.indexOf(selectedColor)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .clickable { showPicker = true }
+                .padding(vertical = 4.dp),
+        ) {
+            ColorSwatch(color = selectedColor)
+            Text(
+                text = selectedColor.toRgbHex(),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            presets.forEachIndexed { index, label ->
+                SegmentedButton(
+                    selected = index == selectedPreset,
+                    onClick = { onColorChange(presetColors[index]) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = presets.size),
+                    icon = {},
+                    label = {
+                        Text(
+                            text = label,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    },
+                )
+            }
+        }
+    }
+
+    if (showPicker) {
+        ColorPickerDialog(
+            initialColor = selectedColor,
+            onDismiss = { showPicker = false },
+            onColorSelected = {
+                onColorChange(it)
+                showPicker = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun ColorSwatch(color: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(Color(color))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+    )
+}
+
+@Composable
+private fun ColorPickerDialog(
+    initialColor: Int,
+    onDismiss: () -> Unit,
+    onColorSelected: (Int) -> Unit,
+) {
+    var color by rememberSaveable(initialColor) { mutableIntStateOf(initialColor.withOpaqueAlpha()) }
+    var hex by rememberSaveable(initialColor) { mutableStateOf(color.toRgbHex()) }
+    val parsedHex = parseRgbHex(hex)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.patch_color_picker_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    ColorSwatch(color = parsedHex ?: color, modifier = Modifier.size(40.dp))
+                    OutlinedTextField(
+                        value = hex,
+                        onValueChange = { value ->
+                            hex = value
+                            parseRgbHex(value)?.let { color = it }
+                        },
+                        label = { Text(stringResource(R.string.patch_color_picker_hex)) },
+                        singleLine = true,
+                        isError = parsedHex == null,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Characters,
+                            keyboardType = KeyboardType.Ascii,
+                        ),
+                        supportingText = if (parsedHex == null) {
+                            { Text(stringResource(R.string.patch_color_picker_hex_error)) }
+                        } else null,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = parsedHex != null,
+                onClick = { parsedHex?.let(onColorSelected) },
+            ) {
+                Text(stringResource(R.string.action_done))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+    )
 }
 
 @Composable
@@ -430,6 +619,26 @@ private fun formatSliderValue(option: OptionSpec.Slider, value: Float): String {
         unit != null -> "$rounded $unit"
         else -> rounded.toString()
     }
+}
+
+private const val OPAQUE_ALPHA = -0x1000000
+private const val WAZE_DEFAULT = -16747037 // #ff0075e3
+private const val TIDAL_CYAN = -14549268 // #ff21feec
+
+private fun Int.withOpaqueAlpha(): Int = (this and 0x00FFFFFF) or OPAQUE_ALPHA
+
+private fun Int.toRgbHex(): String = "#" +
+        (this and 0x00FFFFFF).toString(16).uppercase().padStart(6, '0')
+
+private fun parseRgbHex(value: String): Int? {
+    val clean = value.trim()
+        .removePrefix("#")
+        .removePrefix("0x")
+        .removePrefix("0X")
+    if (clean.length != 6 && clean.length != 8) return null
+    val parsed = clean.toLongOrNull(16) ?: return null
+    val rgb = if (clean.length == 8) parsed and 0x00FFFFFFL else parsed
+    return (0xFF000000L or rgb).toInt()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
