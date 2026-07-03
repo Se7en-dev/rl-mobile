@@ -19,7 +19,9 @@ import com.meowarex.rlmobile.R
 import com.meowarex.rlmobile.ui.components.*
 import com.meowarex.rlmobile.ui.screens.componentopts.PatchComponent
 import com.meowarex.rlmobile.ui.screens.patching.PatchingScreen
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.meowarex.rlmobile.ui.screens.patchopts.components.PackageNameStateLabel
+import com.meowarex.rlmobile.ui.screens.patchopts.components.PackageNameUnlockDialog
 import com.meowarex.rlmobile.ui.screens.patchopts.components.PatchOptionsAppBar
 import com.meowarex.rlmobile.ui.screens.patchopts.components.PatchSelectionAccordion
 import com.meowarex.rlmobile.ui.screens.patchopts.components.options.*
@@ -55,13 +57,16 @@ class PatchOptionsScreen(
             packageNameState = model.packageNameState,
             setPackageName = model::changePackageName,
 
+            packageNameLocked = model.packageNameLocked,
+            onUnlockPackageName = model::unlockPackageName,
+            onLockPackageName = model::lockPackageName,
+
             customTidalApk = model.customTidalApk,
             customPatches = model.customPatches,
             onSelectCustomTidalApk = { model.selectCustomTidalApk(navigator) },
             onSelectCustomPatches = { model.selectCustomPatches(navigator) },
 
             specs = model.specs,
-            enabledPatchCount = model.enabledPatchCount,
             isPatchEnabled = model::isPatchEnabled,
             onTogglePatch = model::setPatchEnabled,
             patchLockState = model::lockState,
@@ -93,13 +98,16 @@ fun PatchOptionsScreenContent(
     packageNameState: PackageNameState,
     setPackageName: (String) -> Unit,
 
+    packageNameLocked: Boolean,
+    onUnlockPackageName: () -> Unit,
+    onLockPackageName: () -> Unit,
+
     customTidalApk: PatchComponent?,
     onSelectCustomTidalApk: () -> Unit,
     customPatches: PatchComponent?,
     onSelectCustomPatches: () -> Unit,
 
     specs: List<PatchSpec>,
-    enabledPatchCount: Int,
     isPatchEnabled: (PatchSpec) -> Boolean,
     onTogglePatch: (PatchSpec, Boolean) -> Unit,
     patchLockState: (PatchSpec) -> PatchLock,
@@ -110,6 +118,18 @@ fun PatchOptionsScreenContent(
     isConfigValid: Boolean,
     onInstall: () -> Unit,
 ) {
+    var showPkgUnlockDialog by rememberSaveable { mutableStateOf(false) }
+    if (showPkgUnlockDialog) {
+        PackageNameUnlockDialog(
+            blockedTitles = specs.filter { it.pathLocked }.map { it.title },
+            onConfirm = {
+                showPkgUnlockDialog = false
+                onUnlockPackageName()
+            },
+            onDismiss = { showPkgUnlockDialog = false },
+        )
+    }
+
     Scaffold(
         topBar = { PatchOptionsAppBar(isUpdate = isUpdate) },
     ) { paddingValues ->
@@ -159,6 +179,10 @@ fun PatchOptionsScreenContent(
                     valueIsDefault = packageNameIsDefault,
                     onValueChange = setPackageName,
                     onValueReset = { setPackageName(PatchOptions.Default.packageName) },
+                    locked = packageNameLocked,
+                    onLockClick = {
+                        if (packageNameLocked) showPkgUnlockDialog = true else onLockPackageName()
+                    },
                 ) {
                     PackageNameStateLabel(
                         state = packageNameState,
@@ -167,17 +191,40 @@ fun PatchOptionsScreenContent(
                 }
             }
 
+            val (integrations, patches) = remember(specs) { specs.partition { it.isIntegration } }
+
+            if (integrations.isNotEmpty()) {
+                PatchSelectionAccordion(
+                    iconRes = R.drawable.ic_extension,
+                    titleRes = R.string.patchopts_integrations_title,
+                    descriptionRes = R.string.patchopts_integrations_desc,
+                    specs = integrations,
+                    enabledCount = integrations.count(isPatchEnabled),
+                    totalCount = integrations.size,
+                    isEnabled = isPatchEnabled,
+                    onToggle = onTogglePatch,
+                    lockState = patchLockState,
+                    variantIndex = variantIndex,
+                    onSelectVariant = onSelectVariant,
+                    optionState = optionState,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+
             PatchSelectionAccordion(
-                specs = specs,
-                enabledCount = enabledPatchCount,
-                totalCount = specs.size,
+                iconRes = R.drawable.ic_healing,
+                titleRes = R.string.patchopts_patches_title,
+                descriptionRes = R.string.patchopts_patches_desc,
+                specs = patches,
+                enabledCount = patches.count(isPatchEnabled),
+                totalCount = patches.size,
                 isEnabled = isPatchEnabled,
                 onToggle = onTogglePatch,
                 lockState = patchLockState,
                 variantIndex = variantIndex,
                 onSelectVariant = onSelectVariant,
                 optionState = optionState,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = if (integrations.isEmpty()) Modifier.padding(top = 4.dp) else Modifier,
             )
 
             if (isDevMode) {

@@ -1,6 +1,8 @@
 package com.meowarex.rlmobile.ui.screens.patchopts.components
 
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -27,6 +29,7 @@ import com.meowarex.rlmobile.R
 import com.meowarex.rlmobile.ui.screens.patchopts.OptionSpec
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchLock
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptionState
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptions
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchSpec
 import com.meowarex.rlmobile.ui.screens.patchopts.effectiveVariants
 import com.meowarex.rlmobile.ui.screens.patchopts.resolveVariantIndex
@@ -35,6 +38,9 @@ private data class LockInfo(val patch: PatchSpec, val lock: PatchLock)
 
 @Composable
 fun PatchSelectionAccordion(
+    @DrawableRes iconRes: Int,
+    @StringRes titleRes: Int,
+    @StringRes descriptionRes: Int,
     specs: List<PatchSpec>,
     enabledCount: Int,
     totalCount: Int,
@@ -69,12 +75,17 @@ fun PatchSelectionAccordion(
                 .clickable(role = Role.Button) { expanded = !expanded }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+            )
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = stringResource(R.string.patchopts_patches_title),
+                    text = stringResource(titleRes),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
@@ -106,7 +117,7 @@ fun PatchSelectionAccordion(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.patchopts_patches_desc),
+                    text = stringResource(descriptionRes),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .alpha(.7f)
@@ -372,6 +383,11 @@ private fun PatchLockDialog(
             R.string.patch_lock_blocked_msg,
             lock.by.title,
         )
+        PatchLock.RequiresDefaultPackage -> Triple(
+            R.string.patch_lock_pkgname_title,
+            R.string.patch_lock_pkgname_msg,
+            PatchOptions.Default.packageName,
+        )
         PatchLock.Free -> return
     }
 
@@ -391,7 +407,7 @@ private fun PatchLockDialog(
                 )
                 Text(
                     text = AnnotatedString.fromHtml(stringResource(msgRes, blockerTitle)),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                 )
                 Box(modifier = Modifier.fillMaxWidth()) {
                     TextButton(

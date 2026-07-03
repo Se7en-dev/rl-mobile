@@ -43,6 +43,24 @@ class PatchOptionsModel(
         fetchPkgNameStateDebounced()
     }
 
+    /** Patches flagged [PatchSpec.pathLocked] only work under the stock package name. */
+    fun isBlockedByPackageName(spec: PatchSpec): Boolean =
+        spec.pathLocked && packageName != PatchOptions.Default.packageName
+
+    /** The package-name field starts locked & editing requires confirming the unlock dialog */
+    var packageNameLocked by mutableStateOf(prefilledOptions.packageName == PatchOptions.Default.packageName)
+        private set
+
+    fun unlockPackageName() {
+        packageNameLocked = false
+    }
+
+    /** Re-locking snaps the package name back to the stock default */
+    fun lockPackageName() {
+        packageNameLocked = true
+        changePackageName(PatchOptions.Default.packageName)
+    }
+
     var appName by mutableStateOf(prefilledOptions.appName)
         private set
 
@@ -83,7 +101,7 @@ class PatchOptionsModel(
             .coerceIn(0, spec.variants.lastIndex.coerceAtLeast(0))
 
     fun isPatchEnabled(spec: PatchSpec): Boolean =
-        patchStates[spec.id] ?: spec.defaultEnabled
+        !isBlockedByPackageName(spec) && (patchStates[spec.id] ?: spec.defaultEnabled)
 
     fun setPatchEnabled(spec: PatchSpec, enabled: Boolean) {
         val byId = specs.associateBy { it.id }
@@ -190,6 +208,7 @@ class PatchOptionsModel(
     )
 
     fun lockState(spec: PatchSpec): PatchLock {
+        if (isBlockedByPackageName(spec)) return PatchLock.RequiresDefaultPackage
         if (spec.variants.isNotEmpty()) return PatchLock.Free
 
         val byId = specs.associateBy { it.id }
@@ -215,9 +234,6 @@ class PatchOptionsModel(
         }
         return PatchLock.Free
     }
-
-    val enabledPatchCount: Int
-        get() = specs.count { isPatchEnabled(it) }
 
     var customTidalApk by mutableStateOf<PatchComponent?>(null)
         private set
@@ -333,7 +349,10 @@ class PatchOptionsModel(
             debuggable = debuggable,
             customTidalApk = customTidalApk,
             customPatches = customPatches,
-            patchStates = patchStates,
+            // Hard-disable package-name-bound patches so the patcher can't apply
+            patchStates = patchStates.toMutableMap().apply {
+                specs.filter { isBlockedByPackageName(it) }.forEach { this[it.id] = false }
+            },
             selectedVariants = selectedVariants,
             optionFloats = optionFloats,
             optionBools = optionBools,
@@ -395,4 +414,7 @@ sealed class PatchLock {
     data object Free : PatchLock()
     data class LockedOn(val by: PatchSpec) : PatchLock()
     data class LockedOff(val by: PatchSpec) : PatchLock()
+
+    /** Locked off because the install uses a non-default package name */
+    data object RequiresDefaultPackage : PatchLock()
 }

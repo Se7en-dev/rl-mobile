@@ -215,6 +215,8 @@
     {
       "id": "WazeIntegration",
       "order": 90,
+      "category": "integration",
+      "pathLocked": true,
       "fileNames": ["waze-media-browser.patch"],
       "extensionFiles": ["radiant/WazeInitReceiver.smali", "radiant/WazeServiceConnection.smali"],
       "title": "Waze Integration",

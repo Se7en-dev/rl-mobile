@@ -24,6 +24,8 @@ enum class KnownPatch(
     val variants: List<PatchVariant> = emptyList(),
     val defaultVariantIndex: Int = 0,
     val advancedOptions: List<PatchOption> = emptyList(),
+    val category: String = PatchSpec.CATEGORY_PATCH,
+    val pathLocked: Boolean = false,
 ) {
     LyricsDisableCover(
         order = 41,
@@ -140,6 +142,8 @@ enum class KnownPatch(
         titleRes = R.string.patch_waze_integration_title,
         descRes = R.string.patch_waze_integration_desc,
         default = Disabled,
+        category = PatchSpec.CATEGORY_INTEGRATION,
+        pathLocked = true,
         advancedOptions = listOf(
             PatchOption.Choice(
                 key = "browse_root",

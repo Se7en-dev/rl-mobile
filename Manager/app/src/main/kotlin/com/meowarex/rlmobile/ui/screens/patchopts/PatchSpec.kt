@@ -29,7 +29,16 @@ data class PatchSpec(
     val variants: List<VariantSpec> = emptyList(),
     val defaultVariantIndex: Int = 0,
     val advancedOptions: List<OptionSpec> = emptyList(),
-)
+    val category: String = CATEGORY_PATCH,
+    val pathLocked: Boolean = false,
+) {
+    val isIntegration: Boolean get() = category == CATEGORY_INTEGRATION
+
+    companion object {
+        const val CATEGORY_PATCH = "patch"
+        const val CATEGORY_INTEGRATION = "integration"
+    }
+}
 
 @Immutable
 @Serializable
@@ -163,6 +172,8 @@ fun builtinPatchSpecs(resolve: (Int) -> String): List<PatchSpec> =
             variants = patch.variants.map { VariantSpec(resolve(it.titleRes), it.fileNames, it.extensionFiles) },
             defaultVariantIndex = patch.defaultVariantIndex,
             advancedOptions = patch.advancedOptions.map { it.toSpec(resolve) },
+            category = patch.category,
+            pathLocked = patch.pathLocked,
         )
     }
 
