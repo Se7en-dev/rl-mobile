@@ -130,6 +130,39 @@ enum class KnownPatch(
         descRes = R.string.patch_debug_menu_unlock_desc,
         default = Disabled,
     ),
+    WazeIntegration(
+        order = 90,
+        fileNames = listOf("waze-media-browser.patch"),
+        extensionFiles = listOf(
+            "radiant/WazeInitReceiver.smali",
+            "radiant/WazeServiceConnection.smali",
+        ),
+        titleRes = R.string.patch_waze_integration_title,
+        descRes = R.string.patch_waze_integration_desc,
+        default = Disabled,
+        advancedOptions = listOf(
+            PatchOption.Choice(
+                key = "browse_root",
+                titleRes = R.string.patch_waze_browse_root_title,
+                entries = listOf(
+                    ChoiceEntry(R.string.patch_waze_root_auto, value = "ROOT_AUTO"),
+                    ChoiceEntry(R.string.patch_waze_root_home, value = "HOME_V2::home_page_v2_id"),
+                    ChoiceEntry(
+                        R.string.patch_waze_root_recents,
+                        value = "RECENTLY_PLAYED::home/pages/CONTINUE_LISTEN_TO/view-all",
+                    ),
+                ),
+                defaultIndex = 0,
+                token = "RL_WAZE_ROOT_ID",
+            ),
+            PatchOption.Color(
+                key = "accent_color",
+                titleRes = R.string.patch_waze_accent_color_title,
+                default = -16747037, // Waze default #ff0075e3
+                token = "RL_WAZE_THEME_COLOR",
+            ),
+        ),
+    ),
     LyricsProgressPill(
         order = 40,
         fileNames = listOf(

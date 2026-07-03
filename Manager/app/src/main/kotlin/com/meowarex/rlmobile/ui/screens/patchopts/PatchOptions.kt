@@ -56,6 +56,9 @@ data class PatchOptions(
         (optionInts["${spec.id}/${option.key}"] ?: option.defaultIndex)
             .coerceIn(0, option.entries.lastIndex.coerceAtLeast(0))
 
+    fun colorValue(spec: PatchSpec, option: OptionSpec.Color): Int =
+        optionInts["${spec.id}/${option.key}"] ?: option.default
+
     fun isToggleOn(spec: PatchSpec, option: OptionSpec.Toggle): Boolean =
         optionBools["${spec.id}/${option.key}"] ?: option.default
 
@@ -134,6 +137,10 @@ data class PatchOptions(
                         } ?: false
                         val index = if (gatedOff) 0 else choiceIndex(spec, option)
                         put("__${token}__", option.values.getOrNull(index) ?: continue)
+                    }
+                    is OptionSpec.Color -> {
+                        val token = option.token ?: continue
+                        put("__${token}__", colorValue(spec, option).toString())
                     }
                 }
             }

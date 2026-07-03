@@ -18,12 +18,16 @@ object ManifestPatcher {
     private const val IS_SPLIT_REQUIRED = "isSplitRequired"
     private const val REQUIRED_SPLIT_TYPES = "requiredSplitTypes"
     private const val SPLIT_TYPES = "splitTypes"
+    private const val WAZE_PACKAGE = "com.waze"
+    private const val WAZE_INIT_RECEIVER = "radiant.WazeInitReceiver"
+    private const val WAZE_ACTION_INIT = "com.waze.sdk.audio.ACTION_INIT"
 
     fun patchManifest(
         manifestBytes: ByteArray,
         packageName: String,
         appName: String,
         debuggable: Boolean,
+        enableWazeIntegration: Boolean,
     ): ByteArray {
         // Extract original package name to rewrite every reference to it
         // (permissions, provider authorities) to the new packageName.
@@ -84,6 +88,49 @@ object ManifestPatcher {
                         }
 
                         return when (name) {
+                            "queries" -> object : NodeVisitor(nv) {
+                                private var hasWazePackage = false
+
+                                override fun child(ns: String?, name: String): NodeVisitor {
+                                    val visitor = super.child(ns, name)
+
+                                    return if (enableWazeIntegration && name == "package") {
+                                        object : NodeVisitor(visitor) {
+                                            override fun attr(
+                                                ns: String?,
+                                                name: String?,
+                                                resourceId: Int,
+                                                type: Int,
+                                                value: Any?,
+                                            ) {
+                                                if (name == "name" && value == WAZE_PACKAGE) {
+                                                    hasWazePackage = true
+                                                }
+                                                super.attr(ns, name, resourceId, type, value)
+                                            }
+                                        }
+                                    } else {
+                                        visitor
+                                    }
+                                }
+
+                                override fun end() {
+                                    if (enableWazeIntegration && !hasWazePackage) {
+                                        super.child(null, "package").apply {
+                                            attr(
+                                                ANDROID_NAMESPACE,
+                                                "name",
+                                                android.R.attr.name,
+                                                TYPE_STRING,
+                                                WAZE_PACKAGE,
+                                            )
+                                            end()
+                                        }
+                                    }
+                                    super.end()
+                                }
+                            }
+
                             "uses-permission" -> object : NodeVisitor(nv) {
                                 override fun attr(ns: String?, name: String?, resourceId: Int, type: Int, value: Any?) {
                                     if (name != "maxSdkVersion") {
@@ -132,6 +179,7 @@ object ManifestPatcher {
                                 private var addUseEmbeddedDex = true
                                 private var addExtractNativeLibs = true
                                 private var addMetadata = true
+                                private var hasWazeInitReceiver = false
 
                                 override fun attr(ns: String?, name: String, resourceId: Int, type: Int, value: Any?) {
                                     if (name == REQUEST_LEGACY_EXTERNAL_STORAGE) addLegacyStorage = false
@@ -161,6 +209,22 @@ object ManifestPatcher {
 
                                     return when (name) {
                                         "activity" -> ReplaceAttrsVisitor(visitor, mapOf("label" to appName))
+
+                                        "receiver" -> object : NodeVisitor(visitor) {
+                                            override fun attr(
+                                                ns: String?,
+                                                name: String,
+                                                resourceId: Int,
+                                                type: Int,
+                                                value: Any?
+                                            ) {
+                                                if (name == "name" && value == WAZE_INIT_RECEIVER) {
+                                                    hasWazeInitReceiver = true
+                                                }
+                                                super.attr(ns, name, resourceId, type, value)
+                                            }
+                                        }
+
                                         "provider" -> object : NodeVisitor(visitor) {
                                             override fun attr(
                                                 ns: String?,
@@ -218,6 +282,39 @@ object ManifestPatcher {
                                         TYPE_INT_BOOLEAN,
                                         0
                                     )
+
+                                    if (enableWazeIntegration && !hasWazeInitReceiver) {
+                                        super.child(null, "receiver").apply {
+                                            attr(
+                                                ANDROID_NAMESPACE,
+                                                "name",
+                                                android.R.attr.name,
+                                                TYPE_STRING,
+                                                WAZE_INIT_RECEIVER,
+                                            )
+                                            attr(
+                                                ANDROID_NAMESPACE,
+                                                "exported",
+                                                android.R.attr.exported,
+                                                TYPE_INT_BOOLEAN,
+                                                1,
+                                            )
+                                            child(null, "intent-filter").apply {
+                                                child(null, "action").apply {
+                                                    attr(
+                                                        ANDROID_NAMESPACE,
+                                                        "name",
+                                                        android.R.attr.name,
+                                                        TYPE_STRING,
+                                                        WAZE_ACTION_INIT,
+                                                    )
+                                                    end()
+                                                }
+                                                end()
+                                            }
+                                            end()
+                                        }
+                                    }
 
                                     super.end()
                                 }

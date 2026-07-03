@@ -153,11 +153,19 @@ class PatchOptionsModel(
         optionInts = optionInts + (keyOf(spec, option) to index)
     }
 
+    fun colorValue(spec: PatchSpec, option: OptionSpec.Color): Int =
+        optionInts[keyOf(spec, option)] ?: option.default
+
+    fun setColorValue(spec: PatchSpec, option: OptionSpec.Color, value: Int) {
+        optionInts = optionInts + (keyOf(spec, option) to value)
+    }
+
     fun isAdvancedModified(spec: PatchSpec): Boolean = spec.advancedOptions.any { option ->
         when (option) {
             is OptionSpec.Toggle -> toggleValue(spec, option) != option.default
             is OptionSpec.Slider -> sliderValue(spec, option) != option.default
             is OptionSpec.Choice -> choiceValue(spec, option) != option.defaultIndex
+            is OptionSpec.Color -> colorValue(spec, option) != option.default
         }
     }
 
@@ -175,6 +183,8 @@ class PatchOptionsModel(
         setSlider = ::setSliderValue,
         choice = ::choiceValue,
         setChoice = ::setChoiceValue,
+        color = ::colorValue,
+        setColor = ::setColorValue,
         isModified = ::isAdvancedModified,
         reset = ::resetAdvanced,
     )
