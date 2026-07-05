@@ -20,13 +20,13 @@
 
     if-eqz p1, :ret    # null guard
 
-    instance-of v0, p1, Ljh/b;    # type guard
+    instance-of v0, p1, Lih/b;    # type guard
 
     if-eqz v0, :ret    # skip if wrong type
 
-    check-cast p1, Ljh/b;    # narrow type
+    check-cast p1, Lih/b;    # narrow type
 
-    iget v0, p1, Ljh/b;->b:F    # raw progress
+    iget v0, p1, Lih/b;->b:F    # raw progress
 
     invoke-static {v0}, Ljava/lang/Float;->isNaN(F)Z    # nan check
 

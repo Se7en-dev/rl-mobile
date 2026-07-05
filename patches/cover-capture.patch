@@ -1,11 +1,11 @@
---- a/com/tidal/android/feature/appscaffold/ui/p.smali
-+++ b/com/tidal/android/feature/appscaffold/ui/p.smali
-@@ -51,6 +51,8 @@
-     .line 10
-     iput-object p4, p0, Lcom/tidal/android/feature/appscaffold/ui/p;->d:Ljava/lang/String;
-
+--- a/com/tidal/android/feature/appscaffold/ui/r.smali
++++ b/com/tidal/android/feature/appscaffold/ui/r.smali
+@@ -48,6 +48,8 @@
+     .line 5
+     iput-object p4, p0, Lcom/tidal/android/feature/appscaffold/ui/r;->d:Ljava/lang/String;
+ 
 +    invoke-static {p3, p4}, Lradiant/HomeBackdrop;->fromMiniPlayer(ILjava/lang/String;)V    # capture cover state
 +
-     .line 11
-     .line 12
-     iput-boolean p5, p0, Lcom/tidal/android/feature/appscaffold/ui/p;->e:Z
+     .line 6
+     iput-boolean p5, p0, Lcom/tidal/android/feature/appscaffold/ui/r;->e:Z
+ 

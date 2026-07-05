@@ -1,34 +1,30 @@
 # rl-locals: com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali e( 79
 --- a/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
-@@ -4945,7 +4945,11 @@
-     const/4 v7, 0x0
-
-     .line 226
--    invoke-static {v7, v9, v4, v2, v10}, Lcom/tidal/android/feature/playerscreen/ui/composables/k1;->a(Landroidx/compose/ui/Modifier;Lyl0/a;ZLandroidx/compose/runtime/Composer;I)V
-+    const v10, 0x52414448    # empty group key
+@@ -5002,7 +5002,11 @@
+     const/4 v13, 0x0
+ 
+     .line 230
+-    invoke-static {v13, v6, v4, v14, v11}, Lcom/tidal/android/feature/playerscreen/ui/composables/h1;->a(Landroidx/compose/ui/Modifier;Lem0/a;ZLandroidx/compose/runtime/Composer;I)V
++    const v13, 0x52414448    # empty group key
 +
-+    invoke-interface {v2, v10}, Landroidx/compose/runtime/Composer;->startReplaceGroup(I)V    # open empty
++    invoke-interface {v14, v13}, Landroidx/compose/runtime/Composer;->startReplaceGroup(I)V    # open empty
 +
-+    invoke-interface {v2}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V    # close empty
-
-     .line 227
-     invoke-interface {v2}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V
-@@ -5720,6 +5724,22 @@
-     :cond_51
-     check-cast v4, Lyl0/a;
-
-     const/4 v2, 0x0
-
-     invoke-static {v13, v7, v2, v4}, Lcom/tidal/android/feature/playerscreen/ui/composables/l3;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lyl0/a;)V
-+
-+    new-instance v74, Lcom/tidal/android/feature/playerscreen/ui/g0;    # lyrics toggle lambda
++    invoke-interface {v14}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V    # close empty
+ 
+     .line 231
+     invoke-interface {v14}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V
+@@ -5791,6 +5795,22 @@
+ 
+     invoke-static {v15, v7, v8, v3}, Lcom/tidal/android/feature/playerscreen/ui/composables/i3;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lem0/a;)V
+ 
++    new-instance v74, Lcom/tidal/android/feature/playerscreen/ui/u0;    # lyrics toggle lambda
 +
 +    move-object/from16 v75, p5    # action dispatcher
 +
 +    const/16 v76, 0x0    # lyrics action disc
 +
-+    invoke-direct/range {v74 .. v76}, Lcom/tidal/android/feature/playerscreen/ui/g0;-><init>(Ljava/lang/Object;I)V    # build lambda
++    invoke-direct/range {v74 .. v76}, Lcom/tidal/android/feature/playerscreen/ui/u0;-><init>(Ljava/lang/Object;I)V    # build lambda
 +
 +    const/16 v71, 0x0    # changed flags
 +
@@ -36,4 +32,8 @@
 +
 +    const/16 v73, 0x0    # null modifier
 +
-+    invoke-static/range {v71 .. v74}, Lradiant/SparkleButton;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lyl0/a;)V    # render sparkle button
++    invoke-static/range {v71 .. v74}, Lradiant/SparkleButton;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lem0/a;)V    # render sparkle button
++
+     .line 336
+     iget-object v3, v10, Lcom/tidal/android/feature/playerscreen/ui/s$a;->l:Lcom/tidal/android/feature/playerscreen/ui/p;
+ 

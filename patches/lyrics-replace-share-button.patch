@@ -1,50 +1,46 @@
 --- a/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
-@@ -5094,7 +5094,11 @@
+@@ -5155,7 +5155,11 @@
      const/4 v13, 0x0
-
-     .line 247
--    invoke-static {v9, v0, v10, v2, v13}, Lcom/tidal/android/feature/playerscreen/ui/composables/BroadcastButtonKt;->b(Lcom/tidal/android/feature/playerscreen/ui/b;Lyl0/a;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V
-+    const v9, 0x52414244    # empty group key
+ 
+     .line 251
+-    invoke-static {v6, v10, v13, v14, v7}, Lcom/tidal/android/feature/playerscreen/ui/composables/BroadcastButtonKt;->b(Lcom/tidal/android/feature/playerscreen/ui/b;Lem0/a;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V
++    const v13, 0x52414244    # empty group key
 +
-+    invoke-interface {v2, v9}, Landroidx/compose/runtime/Composer;->startReplaceGroup(I)V    # open empty
++    invoke-interface {v14, v13}, Landroidx/compose/runtime/Composer;->startReplaceGroup(I)V    # open empty
 +
-+    invoke-interface {v2}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V    # close empty
-
-     .line 248
-     invoke-interface {v2}, Landroidx/compose/runtime/Composer;->endNode()V
-@@ -5770,16 +5774,20 @@
-     .line 335
-     :cond_53
--    new-instance v4, Lcom/aspiro/wamp/tidalconnect/playback/i;
--
--    invoke-direct {v4, v11, v1}, Lcom/aspiro/wamp/tidalconnect/playback/i;-><init>(Ljava/lang/Object;I)V
--
--    .line 336
--    invoke-interface {v7, v4}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V
--
--    .line 337
--    :cond_54
--    check-cast v4, Lyl0/a;
--
--    const/4 v2, 0x0
--
--    invoke-static {v13, v7, v2, v4}, Lcom/tidal/android/feature/playerscreen/ui/composables/x4;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lyl0/a;)V
-+    new-instance v4, Landroidx/navigation/fragment/k;    # connect click lambda factory
++    invoke-interface {v14}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V    # close empty
+ 
+     .line 252
+     invoke-interface {v14}, Landroidx/compose/runtime/Composer;->endNode()V
+@@ -5978,11 +5982,11 @@
+     .line 356
+     :cond_59
+     :goto_29
+-    new-instance v0, Lcom/tidal/android/feature/playerscreen/ui/i0;
++    new-instance v0, Lcom/squareup/ui/market/modal/o;    # connect click lambda (was share i0)
+ 
+-    const/4 v15, 0x0
++    const/4 v15, 0x1    # connect-clicked disc
+ 
+-    invoke-direct {v0, v11, v15}, Lcom/tidal/android/feature/playerscreen/ui/i0;-><init>(Ljava/lang/Object;I)V
++    invoke-direct {v0, v11, v15}, Lcom/squareup/ui/market/modal/o;-><init>(Ljava/lang/Object;I)V    # build connect lambda
+ 
+     .line 357
+     invoke-interface {v7, v0}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V
+@@ -5991,9 +5995,13 @@
+     :goto_2a
+     check-cast v0, Lem0/a;
+ 
+-    const/4 v8, 0x0
++    iget-object v8, v10, Lcom/tidal/android/feature/playerscreen/ui/s$a;->d:Lcom/tidal/android/feature/playerscreen/ui/b;    # broadcast state
 +
-+    move-object/from16 v6, p5    # action dispatcher
++    const/4 v13, 0x0    # null modifier
 +
-+    const/4 v8, 0x1    # connect-clicked disc
-+
-+    invoke-direct {v4, v6, v8}, Landroidx/navigation/fragment/k;-><init>(Ljava/lang/Object;I)V    # build lambda
-+
-+    invoke-interface {v7, v4}, Landroidx/compose/runtime/Composer;->updateRememberedValue(Ljava/lang/Object;)V    # cache lambda
-+
-+    :cond_54    # cache join
-+    check-cast v4, Lyl0/a;    # cast to Function0
-+
-+    iget-object v8, v10, Lcom/tidal/android/feature/playerscreen/ui/r$a;->d:Lcom/tidal/android/feature/playerscreen/ui/b;    # broadcast state
-+
-+    const/4 v2, 0x0    # changed flags
-+
-+    invoke-static {v8, v4, v13, v7, v2}, Lcom/tidal/android/feature/playerscreen/ui/composables/BroadcastButtonKt;->b(Lcom/tidal/android/feature/playerscreen/ui/b;Lyl0/a;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V    # render connect button
++    const/4 v15, 0x0    # changed flags
+ 
+-    invoke-static {v15, v7, v8, v0}, Lcom/tidal/android/feature/playerscreen/ui/composables/t4;->a(ILandroidx/compose/runtime/Composer;Landroidx/compose/ui/Modifier;Lem0/a;)V
++    invoke-static {v8, v0, v13, v7, v15}, Lcom/tidal/android/feature/playerscreen/ui/composables/BroadcastButtonKt;->b(Lcom/tidal/android/feature/playerscreen/ui/b;Lem0/a;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V    # render connect button
+ 
+     if-ne v1, v2, :cond_5a
+ 

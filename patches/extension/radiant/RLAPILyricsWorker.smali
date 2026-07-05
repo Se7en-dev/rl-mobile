@@ -396,13 +396,23 @@
 
     invoke-static {v4}, Lradiant/RLAPILyricsHook;->dlog(Ljava/lang/String;)V
 
+    iget-object v4, p0, Lradiant/RLAPILyricsWorker;->key:Ljava/lang/String;
+
+    sget-object v5, Lradiant/RLAPILyricsHook;->currentKey:Ljava/lang/String;
+
+    invoke-virtual {v4, v5}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v4
+
+    if-eqz v4, :no_close    # Smthn needed to keep lyrics open
+
     sget-boolean v4, Lradiant/StickyLyrics;->enabled:Z
 
     if-nez v4, :no_close
 
     iget-object v4, p0, Lradiant/RLAPILyricsWorker;->vm:Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;
 
-    iget-object v5, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->N:Lkotlinx/coroutines/flow/MutableStateFlow;
+    iget-object v5, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->O:Lkotlinx/coroutines/flow/MutableStateFlow;
 
     sget-object v6, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
 
@@ -475,9 +485,9 @@
     :key_ok
     iget-object v4, p0, Lradiant/RLAPILyricsWorker;->vm:Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;
 
-    iget-object v5, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->M:Lkotlinx/coroutines/flow/MutableStateFlow;
+    iget-object v5, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->N:Lkotlinx/coroutines/flow/MutableStateFlow;
 
-    invoke-static {v3}, Ltn0/a;->c(Ljava/lang/Iterable;)Ltn0/b;
+    invoke-static {v3}, Lzn0/a;->c(Ljava/lang/Iterable;)Lzn0/b;
 
     move-result-object v6
 
@@ -494,9 +504,9 @@
 
     const/4 v10, 0x0
 
-    invoke-direct {v8, v7, v6, v9, v10}, Lcom/tidal/android/feature/playerscreen/ui/g$c;-><init>(Ljava/lang/String;Ltn0/b;IZ)V
+    invoke-direct {v8, v7, v6, v9, v10}, Lcom/tidal/android/feature/playerscreen/ui/g$c;-><init>(Ljava/lang/String;Lzn0/b;IZ)V
 
-    const-string v6, "publishing g$c -> J=true N=true M=g$c"
+    const-string v6, "publishing g$c -> K=true (O=true if sticky) N=g$c"
 
     invoke-static {v6}, Lradiant/RLAPILyricsHook;->dlog(Ljava/lang/String;)V
 
@@ -504,7 +514,7 @@
 
     sput-boolean v6, Lradiant/RLAPILyricsHook;->isRlState:Z
 
-    iget-object v6, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->J:Lkotlinx/coroutines/flow/MutableStateFlow;
+    iget-object v6, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->K:Lkotlinx/coroutines/flow/MutableStateFlow;
 
     sget-object v7, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
 
@@ -514,7 +524,7 @@
 
     if-eqz v9, :skip_n
 
-    iget-object v6, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->N:Lkotlinx/coroutines/flow/MutableStateFlow;
+    iget-object v6, v4, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->O:Lkotlinx/coroutines/flow/MutableStateFlow;
 
     invoke-interface {v6, v7}, Lkotlinx/coroutines/flow/MutableStateFlow;->setValue(Ljava/lang/Object;)V
 

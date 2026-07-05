@@ -1,33 +1,32 @@
 --- a/com/tidal/android/feature/appscaffold/ui/composable/i.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/i.smali
-@@ -2819,4 +2819,10 @@
-     .line 147
-+    const/4 v8, 0x0
-+
-+    invoke-static {v10, v11, v15, v8}, Lradiant/MiniPlayerBackground;->color(JLandroidx/compose/runtime/Composer;I)J # dynamic bg or fallback
-+
-+    move-result-wide v10
-+
-     sget-object v8, Lcom/tidal/android/feature/appscaffold/ui/composable/a;->c:Landroidx/compose/foundation/shape/RoundedCornerShape;
+@@ -2334,6 +2334,12 @@
  
-     .line 148
+     move-result-wide v3
+ 
++    const/4 v5, 0x0
++
++    invoke-static {v3, v4, v7, v5}, Lradiant/MiniPlayerBackground;->color(JLandroidx/compose/runtime/Composer;I)J # dynamic bg or fallback
++
++    move-result-wide v3
++
+     .line 150
+     sget-object v5, Lcom/tidal/android/feature/appscaffold/ui/composable/a;->c:Landroidx/compose/foundation/shape/RoundedCornerShape;
+ 
 --- a/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
-@@ -1047,9 +1047,13 @@
-     invoke-static {v2, v1, v4, v3}, Lkotlinx/coroutines/flow/FlowKt;->stateIn(Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/SharingStarted;Ljava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+@@ -1063,6 +1063,10 @@
  
-     move-result-object v1
+     iput-object v1, v0, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->V:Lkotlinx/coroutines/flow/StateFlow;
  
-     iput-object v1, v0, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->U:Lkotlinx/coroutines/flow/StateFlow;
- 
-+    iget-object v1, v0, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->O:Lkotlin/h;
++    iget-object v1, v0, Lcom/tidal/android/feature/playerscreen/ui/PlayerViewModel;->P:Lkotlin/i;
 +
-+    invoke-interface {v1}, Lkotlin/h;->getValue()Ljava/lang/Object; # init player bg color
++    invoke-interface {v1}, Lkotlin/i;->getValue()Ljava/lang/Object; # init player bg color
 +
      return-void
  .end method
  
-@@ -1607,6 +1611,8 @@
+@@ -1620,6 +1624,8 @@
      :goto_6
      invoke-interface {v9, v10}, Lkotlinx/coroutines/flow/MutableStateFlow;->setValue(Ljava/lang/Object;)V
  
@@ -36,7 +35,7 @@
      .line 263
      .line 264
      .line 265
-@@ -2306,6 +2312,8 @@
+@@ -2319,6 +2325,8 @@
      .line 598
      invoke-interface {v1, v5}, Lkotlinx/coroutines/flow/MutableStateFlow;->setValue(Ljava/lang/Object;)V
  
@@ -45,7 +44,7 @@
      .line 599
      .line 600
      .line 601
-@@ -2523,6 +2531,8 @@
+@@ -2536,6 +2544,8 @@
      .line 704
      invoke-interface {v1, v5}, Lkotlinx/coroutines/flow/MutableStateFlow;->setValue(Ljava/lang/Object;)V
  

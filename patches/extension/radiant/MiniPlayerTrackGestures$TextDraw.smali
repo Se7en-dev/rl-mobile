@@ -1,6 +1,6 @@
 .class public final Lradiant/MiniPlayerTrackGestures$TextDraw;
 .super Ljava/lang/Object;
-.implements Lyl0/l;
+.implements Lem0/l;
 
 
 # annotations
@@ -41,7 +41,7 @@
 
 
 # virtual methods
-.method public final invoke(Landroidx/compose/ui/graphics/drawscope/ContentDrawScope;)Lkotlin/u;
+.method public final invoke(Landroidx/compose/ui/graphics/drawscope/ContentDrawScope;)Lkotlin/v;
     .locals 12
 
     sget-object v0, Lradiant/MiniPlayerTrackGestures;->b:Landroidx/compose/runtime/MutableFloatState;
@@ -101,16 +101,28 @@
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    invoke-static {v7, v8, v9}, Landroidx/compose/animation/i;->b(Landroidx/compose/ui/graphics/drawscope/DrawContext;J)V
+    invoke-interface {v7}, Landroidx/compose/ui/graphics/drawscope/DrawContext;->getCanvas()Landroidx/compose/ui/graphics/Canvas;
 
-    sget-object p1, Lkotlin/u;->a:Lkotlin/u;
+    move-result-object v0
+
+    invoke-interface {v0}, Landroidx/compose/ui/graphics/Canvas;->restore()V
+
+    invoke-interface {v7, v8, v9}, Landroidx/compose/ui/graphics/drawscope/DrawContext;->setSize-uvyYCjk(J)V
+
+    sget-object p1, Lkotlin/v;->a:Lkotlin/v;
 
     return-object p1
 
     :catchall_0
     move-exception v0
 
-    invoke-static {v7, v8, v9}, Landroidx/compose/animation/i;->b(Landroidx/compose/ui/graphics/drawscope/DrawContext;J)V
+    invoke-interface {v7}, Landroidx/compose/ui/graphics/drawscope/DrawContext;->getCanvas()Landroidx/compose/ui/graphics/Canvas;
+
+    move-result-object v1
+
+    invoke-interface {v1}, Landroidx/compose/ui/graphics/Canvas;->restore()V
+
+    invoke-interface {v7, v8, v9}, Landroidx/compose/ui/graphics/drawscope/DrawContext;->setSize-uvyYCjk(J)V
 
     throw v0
 .end method
@@ -120,7 +132,7 @@
 
     check-cast p1, Landroidx/compose/ui/graphics/drawscope/ContentDrawScope;
 
-    invoke-virtual {p0, p1}, Lradiant/MiniPlayerTrackGestures$TextDraw;->invoke(Landroidx/compose/ui/graphics/drawscope/ContentDrawScope;)Lkotlin/u;
+    invoke-virtual {p0, p1}, Lradiant/MiniPlayerTrackGestures$TextDraw;->invoke(Landroidx/compose/ui/graphics/drawscope/ContentDrawScope;)Lkotlin/v;
 
     move-result-object p1
 

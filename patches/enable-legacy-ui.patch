@@ -1,12 +1,11 @@
---- a/kg/e.smali
-+++ b/kg/e.smali
-@@ -26,8 +26,8 @@
-     new-instance v0, Lkg/e;
-
+--- a/jg/d.smali
++++ b/jg/d.smali
+@@ -27,7 +27,7 @@
+ 
      .line 2
      .line 3
 -    const-string v1, "player-market-ui"
 +    const-string v1, "player-market-ui-rl-forced-off"    # break flag key lookup
-
+ 
      .line 4
      .line 5

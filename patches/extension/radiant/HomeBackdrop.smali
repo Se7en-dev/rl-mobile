@@ -273,9 +273,9 @@
 
     sget v2, Lradiant/HomeBackdrop;->currentAlbumId:I
 
-    new-instance v3, Lcom/tidal/android/feature/playerscreen/ui/composables/n0;
+    new-instance v3, Lcom/tidal/android/feature/playerscreen/ui/composables/o0;
 
-    invoke-direct {v3, v2, v1}, Lcom/tidal/android/feature/playerscreen/ui/composables/n0;-><init>(ILjava/lang/String;)V
+    invoke-direct {v3, v2, v1}, Lcom/tidal/android/feature/playerscreen/ui/composables/o0;-><init>(ILjava/lang/String;)V
 
     sget-object v4, Landroidx/compose/ui/Modifier;->Companion:Landroidx/compose/ui/Modifier$Companion;
 
@@ -331,7 +331,7 @@
 
     const/16 v15, 0x48
 
-    invoke-static/range {v6 .. v15}, Lxd0/f;->a(Lyl0/l;Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/ColorFilter;Landroidx/compose/ui/layout/ContentScale;Ljava/lang/Object;Lyl0/a;Landroidx/compose/runtime/Composer;II)V
+    invoke-static/range {v6 .. v15}, Lee0/e;->a(Lem0/l;Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/ColorFilter;Landroidx/compose/ui/layout/ContentScale;Ljava/lang/Object;Lem0/a;Landroidx/compose/runtime/Composer;II)V
 
     sget-object v3, Landroidx/compose/ui/Modifier;->Companion:Landroidx/compose/ui/Modifier$Companion;
 

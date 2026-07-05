@@ -13,3 +13,20 @@
      .line 27
      .line 28
      iput v2, p0, Lcom/tidal/android/feature/playerscreen/ui/PlayerScreenKt$PlayerScreenPortrait$2$1;->label:I
+--- a/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
++++ b/com/tidal/android/feature/playerscreen/ui/PlayerViewModel.smali
+@@ -1299,6 +1299,14 @@
+     .line 109
+     .line 110
+     move-result v1
++    sget v4, Lradiant/LyricsReinitGuard;->lastMediaId:I
++    if-eq v1, v4, :rl_skip_reinit    # same track re-emitted -> skip the redundant re-init (avoids the loading-state flash)
++    sput v1, Lradiant/LyricsReinitGuard;->lastMediaId:I
++    goto :rl_reinit_ok
++    :rl_skip_reinit
++    sget-object v4, Lkotlin/v;->a:Lkotlin/v;
++    return-object v4
++    :rl_reinit_ok
+ 
+     .line 111
+     invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
