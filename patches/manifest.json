@@ -4,11 +4,15 @@
     {
       "id": "EnableLegacyUi",
       "order": 10,
-      "fileNames": ["enable-legacy-ui.patch"],
+      "fileNames": [
+        "enable-legacy-ui.patch"
+      ],
       "title": "Enable Legacy UI",
       "description": "[This patch will stop working soon] - Replaces the New Compose based UI with the Legacy UI (disables player-market-ui feature flag)",
       "default": false,
-      "requires": ["DebugMenuUnlock"],
+      "requires": [
+        "DebugMenuUnlock"
+      ],
       "disables": [
         "LyricsDisableCover",
         "LyricsReplaceLyricsButton",
@@ -24,7 +28,10 @@
     {
       "id": "LyricsRlApi",
       "order": 20,
-      "fileNames": ["lyrics-rl-api.patch", "lyrics-rl-api-observer.patch"],
+      "fileNames": [
+        "lyrics-rl-api.patch",
+        "lyrics-rl-api-observer.patch"
+      ],
       "title": "Radiant Lyrics API - WIP",
       "description": "Use Radiant Lyrics API to fetch Lyrics (Higher quality & More providers)",
       "default": false
@@ -32,7 +39,9 @@
     {
       "id": "PlayerBackdrop",
       "order": 30,
-      "fileNames": ["player-backdrop.patch"],
+      "fileNames": [
+        "player-backdrop.patch"
+      ],
       "title": "Player Backdrop",
       "description": "Restores the legacy translucent backdrop blur behind the player",
       "default": true,
@@ -48,7 +57,10 @@
           "steps": 19,
           "displayAsPercent": true,
           "token": "RL_BLUR_BITS",
-          "encode": { "kind": "floatBits", "scale": 1.8 }
+          "encode": {
+            "kind": "floatBits",
+            "scale": 1.8
+          }
         },
         {
           "type": "slider",
@@ -61,7 +73,9 @@
           "steps": 19,
           "displayAsPercent": true,
           "token": "RL_SCRIM_ARGB",
-          "encode": { "kind": "argbAlpha" }
+          "encode": {
+            "kind": "argbAlpha"
+          }
         },
         {
           "type": "toggle",
@@ -70,22 +84,43 @@
           "description": "Applies the blurred backdrop to every Compose based page (Home & Collection)",
           "default": false,
           "inline": true,
-          "fileNames": ["home-backdrop.patch", "collection-backdrop.patch", "cover-capture.patch"]
+          "fileNames": [
+            "home-backdrop.patch",
+            "collection-backdrop.patch",
+            "cover-capture.patch"
+          ]
         }
       ]
     },
     {
       "id": "QualityBadgeColors",
       "order": 36,
-      "fileNames": ["player-quality-badge-colors.patch"],
+      "fileNames": [
+        "player-quality-badge-colors.patch"
+      ],
       "title": "Quality Badge Colors",
       "description": "Brings color back to the player quality badge.",
       "default": true
     },
     {
-      "id": "PlayerOneHanded",
+      "id": "PlayerMovePlayingFrom",
       "order": 37,
-      "fileNames": ["player-one-handed.patch"],
+      "fileNames": [
+        "player-move-playing-from.patch"
+      ],
+      "extensionFiles": [
+        "radiant/PlayingFrom.smali"
+      ],
+      "title": "Playing From",
+      "description": "Shows the source name (playlist/album/mix) above the track title",
+      "default": true
+    },
+    {
+      "id": "PlayerOneHanded",
+      "order": 38,
+      "fileNames": [
+        "player-one-handed.patch"
+      ],
       "title": "One-Handed Mode",
       "description": "Mirrors the bottom player buttons left-to-right for easier one-handed reach.",
       "default": false
@@ -93,16 +128,25 @@
     {
       "id": "LyricsProgressPill",
       "order": 40,
-      "fileNames": ["lyrics-progress-pill.patch", "lyrics-fade-region.patch"],
+      "fileNames": [
+        "lyrics-progress-pill.patch",
+        "lyrics-fade-region.patch"
+      ],
       "title": "Lyrics Progress Pill",
       "description": "Restores the old Track Progress Pill in the top of the Lyrics screen!",
       "default": true,
-      "requires": ["LyricsDisableCover", "LyricsReplaceLyricsButton", "LyricsReplaceShareButton"]
+      "requires": [
+        "LyricsDisableCover",
+        "LyricsReplaceLyricsButton",
+        "LyricsReplaceShareButton"
+      ]
     },
     {
       "id": "LyricsDisableCover",
       "order": 41,
-      "fileNames": ["lyrics-disable-cover.patch"],
+      "fileNames": [
+        "lyrics-disable-cover.patch"
+      ],
       "title": "Disable Lyrics Cover",
       "description": "Removes the mini track cover from the lyrics screen.",
       "default": true
@@ -110,7 +154,10 @@
     {
       "id": "LyricsReplaceLyricsButton",
       "order": 42,
-      "fileNames": ["lyrics-replace-lyrics-button.patch", "lyrics-sparkle-conditional-visibility.patch"],
+      "fileNames": [
+        "lyrics-replace-lyrics-button.patch",
+        "lyrics-sparkle-conditional-visibility.patch"
+      ],
       "title": "Replace Lyrics Button",
       "description": "Replaces the Lyrics button with the RL Sparkle!",
       "default": true
@@ -118,7 +165,9 @@
     {
       "id": "LyricsReplaceShareButton",
       "order": 43,
-      "fileNames": ["lyrics-replace-share-button.patch"],
+      "fileNames": [
+        "lyrics-replace-share-button.patch"
+      ],
       "title": "Replace Share Button",
       "description": "Replaces the share button with the Tidal Connect button from the top of the screen. (it's in the menu already)",
       "default": true
@@ -132,9 +181,22 @@
       "default": false,
       "defaultVariantIndex": 2,
       "variants": [
-        { "title": "Floating", "fileNames": [] },
-        { "title": "Grey", "fileNames": ["mini-player-grey.patch"] },
-        { "title": "Black", "fileNames": ["mini-player-black.patch"] }
+        {
+          "title": "Floating",
+          "fileNames": []
+        },
+        {
+          "title": "Grey",
+          "fileNames": [
+            "mini-player-grey.patch"
+          ]
+        },
+        {
+          "title": "Black",
+          "fileNames": [
+            "mini-player-black.patch"
+          ]
+        }
       ],
       "advancedOptions": [
         {
@@ -144,10 +206,18 @@
           "description": "Colorizes the Mini-Player depending on the currently playing track.",
           "default": false,
           "inline": true,
-          "fileNames": ["mini-player-dynamic-bg.patch"],
-          "extensionFiles": ["radiant/MiniPlayerBackground.smali"],
-          "hidesVariants": [2],
-          "relabelVariants": { "1": "Legacy" }
+          "fileNames": [
+            "mini-player-dynamic-bg.patch"
+          ],
+          "extensionFiles": [
+            "radiant/MiniPlayerBackground.smali"
+          ],
+          "hidesVariants": [
+            2
+          ],
+          "relabelVariants": {
+            "1": "Legacy"
+          }
         },
         {
           "type": "toggle",
@@ -156,8 +226,12 @@
           "description": "Draws an animated progress ring around the floating mini-player. Requires the Floating style.",
           "default": false,
           "requiresVariant": 0,
-          "fileNames": ["mini-player-floating-border.patch"],
-          "extensionFiles": ["radiant/MiniSeekerFloating.smali"]
+          "fileNames": [
+            "mini-player-floating-border.patch"
+          ],
+          "extensionFiles": [
+            "radiant/MiniSeekerFloating.smali"
+          ]
         },
         {
           "type": "toggle",
@@ -165,7 +239,9 @@
           "title": "Mini-Player Gestures",
           "description": "Adds swipe up gesture to the mini-player to reopen the player",
           "default": true,
-          "fileNames": ["mini-player-gestures.patch"],
+          "fileNames": [
+            "mini-player-gestures.patch"
+          ],
           "extensionFiles": [
             "radiant/MiniPlayerGestures.smali",
             "radiant/MiniPlayerGestures$Gesture.smali",
@@ -179,8 +255,14 @@
           "type": "choice",
           "key": "swipe_up_drag",
           "title": "Swipe Up Style",
-          "entries": ["Static", "Drag"],
-          "values": ["0x0", "0x1"],
+          "entries": [
+            "Static",
+            "Drag"
+          ],
+          "values": [
+            "0x0",
+            "0x1"
+          ],
           "defaultIndex": 1,
           "requiresOption": "gestures",
           "token": "RL_MINI_PLAYER_SWIPE_UP_DRAG"
@@ -192,14 +274,16 @@
           "description": "Swipe left or right on the mini-player to skip tracks.",
           "default": false,
           "requiresOption": "gestures",
-          "fileNames": ["mini-player-gestures-left-right.patch"],
+          "fileNames": [
+            "mini-player-gestures-left-right.patch"
+          ],
           "extensionFiles": [
             "radiant/MiniPlayerTrackGestures.smali",
             "radiant/MiniPlayerTrackGestures$Gesture.smali",
             "radiant/MiniPlayerTrackGestures$OffsetLayer.smali",
             "radiant/MiniPlayerTrackGestures$ResetAnimator.smali",
             "radiant/MiniPlayerTrackGestures$TextDraw.smali",
-            "com/tidal/android/feature/appscaffold/ui/q$c.smali"
+            "com/tidal/android/feature/appscaffold/ui/s$c.smali"
           ]
         }
       ]
@@ -207,9 +291,14 @@
     {
       "id": "LyricsKeepControlsVisible",
       "order": 60,
-      "fileNames": ["lyrics-keep-controls-visible.patch"],
+      "fileNames": [
+        "lyrics-keep-controls-visible.patch"
+      ],
+      "extensionFiles": [
+        "radiant/LyricsReinitGuard.smali"
+      ],
       "title": "Keep Controls Visible",
-      "description": "Inverts the auto-hide behavior on the lyrics screen, playback controls stay visible by default and only hide when you tap them off.",
+      "description": "Inverts the auto-hide behavior on the lyrics screen, playback controls stay visible by default and only hide when you tap them off. Also stops the open lyrics view from randomly closing when the player re-fetches the same track.",
       "default": true
     },
     {
@@ -217,8 +306,13 @@
       "order": 90,
       "category": "integration",
       "pathLocked": true,
-      "fileNames": ["waze-media-browser.patch"],
-      "extensionFiles": ["radiant/WazeInitReceiver.smali", "radiant/WazeServiceConnection.smali"],
+      "fileNames": [
+        "integration-waze-playback.patch"
+      ],
+      "extensionFiles": [
+        "radiant/WazeInitReceiver.smali",
+        "radiant/WazeServiceConnection.smali"
+      ],
       "title": "Waze Integration",
       "description": "Control TIDAL playback from the Waze app",
       "default": true,
@@ -227,7 +321,11 @@
           "type": "choice",
           "key": "browse_root",
           "title": "Media Menu",
-          "entries": ["Auto Menu", "Home", "Recents"],
+          "entries": [
+            "Auto Menu",
+            "Home",
+            "Recents"
+          ],
           "values": [
             "ROOT_AUTO",
             "HOME_V2::home_page_v2_id",
@@ -248,7 +346,9 @@
     {
       "id": "DebugMenuUnlock",
       "order": 100,
-      "fileNames": ["debug-menu-unlock.patch"],
+      "fileNames": [
+        "debug-menu-unlock.patch"
+      ],
       "title": "Unlock Debug Menu",
       "description": "Reveals TIDAL's hidden Debug Menu in Settings. (Unlocks Feature Flags & the legacy Debug Options)",
       "default": false

@@ -1,0 +1,66 @@
+# rl-locals: com/tidal/android/feature/playerscreen/ui/composables/k2.smali a( 42
+--- a/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
++++ b/com/tidal/android/feature/playerscreen/ui/PlayerScreenKt.smali
+@@ -5023,6 +5023,20 @@
+
+     .line 233
+     :goto_1d
++    iget-object v0, v3, Lcom/tidal/android/feature/playerscreen/ui/s$a;->l:Lcom/tidal/android/feature/playerscreen/ui/p;    # RL move-playing-from: SourceLabel — published in BOTH cover & lyrics view (may be null)
++
++    if-eqz v0, :rl_pf_null    # no source -> clear
++
++    iget-object v0, v0, Lcom/tidal/android/feature/playerscreen/ui/p;->a:Ljava/lang/String;    # sourceName
++
++    goto :rl_pf_set
++
++    :rl_pf_null
++    const/4 v0, 0x0
++
++    :rl_pf_set
++    sput-object v0, Lradiant/PlayingFrom;->a:Ljava/lang/String;    # publish for k2 (rendered above the title)
++
+     iget-object v0, v3, Lcom/tidal/android/feature/playerscreen/ui/s$a;->c:Lcom/tidal/android/feature/playerscreen/ui/d;
+
+     .line 234
+--- a/com/tidal/android/feature/playerscreen/ui/composables/k2.smali
++++ b/com/tidal/android/feature/playerscreen/ui/composables/k2.smali
+@@ -632,6 +632,39 @@
+     .line 42
+     :cond_1c
+     check-cast v5, Lr20/c2;
++    sget-object v30, Lradiant/PlayingFrom;->a:Ljava/lang/String;    # RL: published "Playing from" source name
++
++    const v13, 0x52414450    # RL group key (v13 is dead here; the title setup below resets it)
++
++    invoke-interface {v1, v13}, Landroidx/compose/runtime/Composer;->startReplaceGroup(I)V
++
++    if-eqz v30, :rl_pf_skip    # no source -> render nothing above the title
++
++    sget-object v31, Landroidx/compose/ui/Modifier;->Companion:Landroidx/compose/ui/Modifier$Companion;
++
++    const/16 v32, 0x1    # maxLines = 1
++
++    const/16 v33, 0x0
++
++    const/16 v34, 0x0
++
++    const/16 v35, 0x0
++
++    const/16 v36, 0x0
++
++    move-object/from16 v37, v5    # reuse the artist PARAGRAPH_30 style (same colour + size as the artist names)
++
++    move-object/from16 v38, v1    # composer
++
++    const/16 v39, 0x0
++
++    const/16 v40, 0x78    # default-arg mask (matches the artist MarketLabel.e call)
++
++    invoke-static/range {v30 .. v40}, Lcom/squareup/ui/market/components/MarketLabelKt;->e(Ljava/lang/String;Landroidx/compose/ui/Modifier;IILcom/squareup/ui/market/text/a;Landroidx/compose/foundation/interaction/MutableInteractionSource;Lem0/l;Lr20/c2;Landroidx/compose/runtime/Composer;II)V
++
++    :rl_pf_skip
++    invoke-interface {v1}, Landroidx/compose/runtime/Composer;->endReplaceGroup()V
++
+
+     .line 43
+     sget-object v13, Landroidx/compose/ui/Modifier;->Companion:Landroidx/compose/ui/Modifier$Companion;

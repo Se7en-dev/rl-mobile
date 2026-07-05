@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
@@ -61,6 +63,15 @@ fun Context.getPackageVersion(pkg: String): Pair<String?, Int> {
     @Suppress("DEPRECATION")
     return packageManager.getPackageInfo(pkg, 0)
         .let { it.versionName to it.versionCode }
+}
+
+// Whether the device currently has a validated internet connection
+fun Context.isOnline(): Boolean {
+    val cm = getSystemService<ConnectivityManager>() ?: return true
+    val network = cm.activeNetwork ?: return false
+    val caps = cm.getNetworkCapabilities(network) ?: return false
+    return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
 
 fun Context.isPackageInstalled(packageName: String): Boolean {

@@ -5,7 +5,7 @@
 # static fields
 .field public static progressState:Landroidx/compose/runtime/MutableFloatState;
 
-.field public static volatile vm:Ljh/h;
+.field public static volatile vm:Lih/g;
 
 .field public static volatile sub:Lio/reactivex/disposables/Disposable;
 
@@ -57,7 +57,7 @@
 
     :start_block
     :try_start
-    sget-object v0, Lradiant/MiniSeekerLine;->vm:Ljh/h;    # cached vm
+    sget-object v0, Lradiant/MiniSeekerLine;->vm:Lih/g;    # cached vm
 
     if-nez v0, :got_vm    # reuse if present
 
@@ -65,32 +65,32 @@
 
     move-result-object v0    # app
 
-    invoke-virtual {v0}, Lcom/aspiro/wamp/App;->e()Lf5/c;    # dagger component
+    invoke-virtual {v0}, Lcom/aspiro/wamp/App;->e()Le5/c;    # dagger component
 
     move-result-object v0    # component
 
-    check-cast v0, Lf5/d0$n2;    # narrow type
+    check-cast v0, Le5/u$n2;    # narrow type
 
-    iget-object v0, v0, Lf5/d0$n2;->z0:Ldagger/internal/j;    # playqueue provider
+    iget-object v0, v0, Le5/u$n2;->z0:Ldagger/internal/j;    # playqueue provider
 
-    invoke-interface {v0}, Lol0/a;->get()Ljava/lang/Object;    # resolve
+    invoke-interface {v0}, Lul0/a;->get()Ljava/lang/Object;    # resolve
 
     move-result-object v0    # playqueue
 
-    check-cast v0, Lcom/aspiro/wamp/playqueue/z0;    # narrow type
+    check-cast v0, Lcom/aspiro/wamp/playqueue/y0;    # narrow type
 
-    new-instance v1, Ljh/h;    # build vm
+    new-instance v1, Lih/g;    # build vm
 
-    invoke-direct {v1, v0}, Ljh/h;-><init>(Lcom/aspiro/wamp/playqueue/z0;)V    # ctor
+    invoke-direct {v1, v0}, Lih/g;-><init>(Lcom/aspiro/wamp/playqueue/y0;)V    # ctor
 
-    sput-object v1, Lradiant/MiniSeekerLine;->vm:Ljh/h;    # cache
+    sput-object v1, Lradiant/MiniSeekerLine;->vm:Lih/g;    # cache
 
     :got_vm
-    sget-object v0, Lradiant/MiniSeekerLine;->vm:Ljh/h;    # vm ref
+    sget-object v0, Lradiant/MiniSeekerLine;->vm:Lih/g;    # vm ref
 
-    invoke-virtual {v0}, Ljh/h;->a()V    # activate emission
+    invoke-virtual {v0}, Lih/g;->a()V    # activate emission
 
-    iget-object v0, v0, Ljh/h;->d:Lio/reactivex/subjects/BehaviorSubject;    # position subject
+    iget-object v0, v0, Lih/g;->d:Lio/reactivex/subjects/BehaviorSubject;    # position subject
 
     invoke-static {}, Lio/reactivex/android/schedulers/AndroidSchedulers;->mainThread()Lio/reactivex/Scheduler;    # main scheduler
 

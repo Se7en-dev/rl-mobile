@@ -1,40 +1,50 @@
 --- a/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/composable/MiniPlayerKt.smali
-@@ -1768,3 +1768,7 @@
+@@ -1215,6 +1215,10 @@
+ 
      move-result-object v6
--
-+
-+    invoke-static {v6, v1}, Lradiant/MiniPlayerTrackGestures;->trackModifier(Landroidx/compose/ui/Modifier;Lyl0/l;)Landroidx/compose/ui/Modifier; # attach horizontal swipe listener
+ 
++    invoke-static {v6, v1}, Lradiant/MiniPlayerTrackGestures;->trackModifier(Landroidx/compose/ui/Modifier;Lem0/l;)Landroidx/compose/ui/Modifier;    # attach horizontal swipe listener
 +
 +    move-result-object v6
 +
      .line 38
-@@ -1884,5 +1888,5 @@
+     sget-object v21, Landroidx/compose/ui/Alignment;->Companion:Landroidx/compose/ui/Alignment$Companion;
+ 
+@@ -1352,6 +1356,8 @@
      .line 56
-     iget-object v6, v0, Lcom/tidal/android/feature/appscaffold/ui/s;->b:Lcom/tidal/android/feature/appscaffold/ui/p;
--
+     iget-object v6, v0, Lcom/tidal/android/feature/appscaffold/ui/u;->b:Lcom/tidal/android/feature/appscaffold/ui/r;
+ 
 +    invoke-static {v6}, Lradiant/MiniPlayerTrackGestures;->onRenderedItem(Ljava/lang/Object;)V    # reset stale drag offset if track metadata changes mid-gesture
++
      .line 57
      invoke-virtual/range {v16 .. v16}, Lcom/squareup/ui/market/core/theme/MarketStylesheet;->getBorderRadii()Lcom/squareup/ui/market/core/theme/MarketStylesheet$b;
-@@ -1919,5 +1923,6 @@
-     invoke-static {v5, v4}, Landroidx/compose/foundation/layout/SizeKt;->size-3ABfNKs(Landroidx/compose/ui/Modifier;F)Landroidx/compose/ui/Modifier;
--
+ 
+@@ -1388,6 +1394,10 @@
+ 
      move-result-object v4
--
-+    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->feedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move the whole cover container with horizontal swipe
+ 
++    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->feedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;    # move the whole cover container with horizontal swipe
++
 +    move-result-object v4
 +
      .line 63
-@@ -2032,3 +2038,5 @@
+     invoke-virtual/range {v22 .. v22}, Lcom/squareup/ui/market/core/theme/MarketStylesheet$c;->p0()Lg20/a;
+ 
+@@ -1499,6 +1509,10 @@
+ 
      move-result-object v4
--
-+    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->textFeedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier; # move title/artist
+ 
++    invoke-static {v4}, Lradiant/MiniPlayerTrackGestures;->textFeedbackModifier(Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;    # move title/artist
++
 +    move-result-object v4
 +
      .line 72
+     invoke-virtual/range {v31 .. v31}, Landroidx/compose/foundation/layout/Arrangement;->getTop()Landroidx/compose/foundation/layout/Arrangement$Vertical;
+ 
 --- a/com/tidal/android/feature/appscaffold/ui/MiniPlayerViewModel.smali
 +++ b/com/tidal/android/feature/appscaffold/ui/MiniPlayerViewModel.smali
-@@ -816,10 +816,10 @@
+@@ -595,10 +595,10 @@
      .line 111
      .line 112
      .line 113
@@ -47,21 +57,19 @@
  
      .line 115
      .line 116
-@@ -997,11 +997,32 @@
-     :cond_e
-     return-void
+@@ -778,6 +778,28 @@
  
--    .line 195
+     .line 195
      :cond_f
-+    sget-object v0, Lcom/tidal/android/feature/appscaffold/ui/q$c;->a:Lcom/tidal/android/feature/appscaffold/ui/q$c;
++    sget-object v0, Lcom/tidal/android/feature/appscaffold/ui/s$c;->a:Lcom/tidal/android/feature/appscaffold/ui/s$c;    # our synthetic previous-track event
 +
-+    invoke-virtual {p1, v0}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
++    invoke-virtual {p1, v0}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z    # is this the swipe-previous event?
 +
 +    move-result p1
 +
 +    if-eqz p1, :unknown_event
 +
-+    invoke-interface {v3}, Lei/e;->canSkipToPreviousOrRewind()Z
++    invoke-interface {v3}, Ldi/e;->canSkipToPreviousOrRewind()Z
 +
 +    move-result p1
 +
@@ -69,36 +77,32 @@
 +
 +    const/4 p1, 0x0
 +
-+    invoke-interface {v3, p1}, Lei/e;->h(Z)V    # false = previous/rewind
++    invoke-interface {v3, p1}, Ldi/e;->h(Z)V    # false = previous/rewind
 +
 +    :previous_done
 +    return-void
 +
 +    :unknown_event
-     invoke-static {}, Landroidx/compose/ui/graphics/y;->b()V
+     invoke-static {}, Lcoil/util/i;->a()V
  
      .line 196
-     .line 197
-     .line 198
-     return-void
---- a/com/tidal/android/feature/appscaffold/ui/composable/e.smali
-+++ b/com/tidal/android/feature/appscaffold/ui/composable/e.smali
-@@ -75,6 +75,18 @@
-     .line 22
+--- a/com/aspiro/wamp/util/m.smali
++++ b/com/aspiro/wamp/util/m.smali
+@@ -61,6 +61,17 @@
+ 
+     .line 15
      :pswitch_0
-+    invoke-static {}, Lradiant/MiniPlayerTrackGestures;->consumeTapOpenSuppression()Z    # prevent tap open after horizontal swipe
++    invoke-static {}, Lradiant/MiniPlayerTrackGestures;->consumeTapOpenSuppression()Z    # skip open-player if a horizontal skip-swipe just happened
 +
 +    move-result v0
 +
-+    if-eqz v0, :continue_open
++    if-eqz v0, :rl_continue_open
 +
-+    sget-object v0, Lkotlin/u;->a:Lkotlin/u;
++    sget-object v0, Lkotlin/v;->a:Lkotlin/v;
 +
 +    return-object v0
 +
-+    :continue_open
-+
-     iget-object v0, p0, Lcom/tidal/android/feature/appscaffold/ui/composable/e;->b:Ljava/lang/Object;
++    :rl_continue_open
+     iget-object v0, p0, Lcom/aspiro/wamp/util/m;->b:Ljava/lang/Object;
  
-     .line 23
-     .line 24
+     .line 16

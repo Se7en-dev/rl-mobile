@@ -65,10 +65,6 @@
 
     invoke-static {p1}, Lradiant/HomeBackdrop;->onTrack(Lcom/aspiro/wamp/model/Track;)V
 
-    const/4 v3, 0x0
-
-    sput-boolean v3, Lradiant/RLAPILyricsHook;->isRlState:Z
-
     const-string v3, "onWampTrack: hook entered"
 
     invoke-static {v3}, Lradiant/RLAPILyricsHook;->dlog(Ljava/lang/String;)V
@@ -156,6 +152,25 @@
     invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v4
+
+    sget-object v5, Lradiant/RLAPILyricsHook;->currentKey:Ljava/lang/String;
+
+    invoke-virtual {v4, v5}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v5
+
+    if-eqz v5, :rl_new_track
+
+    const-string v5, "onWampTrack: same track re-fired, skipping duplicate fetch"
+
+    invoke-static {v5}, Lradiant/RLAPILyricsHook;->dlog(Ljava/lang/String;)V
+
+    return-void
+
+    :rl_new_track
+    const/4 v5, 0x0
+
+    sput-boolean v5, Lradiant/RLAPILyricsHook;->isRlState:Z
 
     sput-object v4, Lradiant/RLAPILyricsHook;->currentKey:Ljava/lang/String;
 

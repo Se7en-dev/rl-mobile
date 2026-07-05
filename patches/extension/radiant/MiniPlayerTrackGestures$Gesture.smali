@@ -1,6 +1,6 @@
 .class public final Lradiant/MiniPlayerTrackGestures$Gesture;
 .super Ljava/lang/Object;
-.implements Lyl0/l;
+.implements Lem0/l;
 
 
 # annotations
@@ -15,16 +15,16 @@
 
 
 # instance fields
-.field public final a:Lyl0/l;
+.field public final a:Lem0/l;
 
 
 # direct methods
-.method public constructor <init>(Lyl0/l;)V
+.method public constructor <init>(Lem0/l;)V
     .locals 0
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    iput-object p1, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lyl0/l;
+    iput-object p1, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lem0/l;
 
     return-void
 .end method
@@ -32,11 +32,11 @@
 .method private nextTrack()V
     .locals 2
 
-    iget-object v0, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lyl0/l;
+    iget-object v0, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lem0/l;
 
-    sget-object v1, Lcom/tidal/android/feature/appscaffold/ui/q$a;->a:Lcom/tidal/android/feature/appscaffold/ui/q$a; # Tidal's built-in next track mini-player event
+    sget-object v1, Lcom/tidal/android/feature/appscaffold/ui/s$a;->a:Lcom/tidal/android/feature/appscaffold/ui/s$a; # Tidal's built-in next track mini-player event
 
-    invoke-interface {v0, v1}, Lyl0/l;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
+    invoke-interface {v0, v1}, Lem0/l;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
 
     return-void
 .end method
@@ -44,18 +44,18 @@
 .method private previousTrack()V
     .locals 2
 
-    iget-object v0, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lyl0/l;
+    iget-object v0, p0, Lradiant/MiniPlayerTrackGestures$Gesture;->a:Lem0/l;
 
-    sget-object v1, Lcom/tidal/android/feature/appscaffold/ui/q$c;->a:Lcom/tidal/android/feature/appscaffold/ui/q$c; # Our synthetic previous track event
+    sget-object v1, Lcom/tidal/android/feature/appscaffold/ui/s$c;->a:Lcom/tidal/android/feature/appscaffold/ui/s$c; # Our synthetic previous track event
 
-    invoke-interface {v0, v1}, Lyl0/l;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
+    invoke-interface {v0, v1}, Lem0/l;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
 
     return-void
 .end method
 
 
 # virtual methods
-.method public final invoke(Landroid/view/MotionEvent;)Lkotlin/u;
+.method public final invoke(Landroid/view/MotionEvent;)Lkotlin/v;
     .locals 3
 
     invoke-virtual {p1}, Landroid/view/MotionEvent;->getActionMasked()I
@@ -132,7 +132,7 @@
     invoke-static {}, Lradiant/MiniPlayerTrackGestures;->cancelDrag()V
 
     :done
-    sget-object p1, Lkotlin/u;->a:Lkotlin/u;
+    sget-object p1, Lkotlin/v;->a:Lkotlin/v;
 
     return-object p1
 .end method
@@ -142,7 +142,7 @@
 
     check-cast p1, Landroid/view/MotionEvent;
 
-    invoke-virtual {p0, p1}, Lradiant/MiniPlayerTrackGestures$Gesture;->invoke(Landroid/view/MotionEvent;)Lkotlin/u;
+    invoke-virtual {p0, p1}, Lradiant/MiniPlayerTrackGestures$Gesture;->invoke(Landroid/view/MotionEvent;)Lkotlin/v;
 
     move-result-object p1
 

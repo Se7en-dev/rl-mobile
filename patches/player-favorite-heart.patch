@@ -1,24 +1,24 @@
---- a/com/tidal/android/feature/playerscreen/ui/composables/c1.smali
-+++ b/com/tidal/android/feature/playerscreen/ui/composables/c1.smali
-@@ -259,7 +259,7 @@
-
-     .line 109
-     .line 110
+--- a/com/tidal/android/feature/playerscreen/ui/composables/z0.smali
++++ b/com/tidal/android/feature/playerscreen/ui/composables/z0.smali
+@@ -91,7 +91,7 @@
+ 
+     .line 32
+     .line 33
 -    sget p2, Lcom/tidal/android/feature/playerscreen/ui/R$drawable;->ic_circle_checked:I
 +    sget p2, Lcom/tidal/android/feature/playerscreen/ui/R$drawable;->ic_shapes_heart_filled_medium:I    # favorited: filled heart (was circle-check)
-
-     .line 111
-     .line 112
-@@ -267,11 +267,7 @@
-
-     .line 113
-     :cond_5
--    sget-object p2, Lx20/b;->O:Lx20/a;
+ 
+     .line 34
+     .line 35
+@@ -99,11 +99,7 @@
+ 
+     .line 36
+     :cond_1
+-    sget-object p2, Lb30/b;->O:Lb30/a;
 -
--    .line 114
--    .line 115
--    iget p2, p2, Lx20/a;->a:I
+-    .line 37
+-    .line 38
+-    iget p2, p2, Lb30/a;->a:I
 +    sget p2, Lcom/tidal/android/feature/playerscreen/ui/R$drawable;->ic_shapes_heart_medium:I    # not favorited: outline heart (was market plus)
-
-     .line 116
-     .line 117
+ 
+     .line 39
+     .line 40

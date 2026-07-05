@@ -48,6 +48,8 @@ class PatchOptionsScreen(
 
             debuggable = model.debuggable,
             setDebuggable = model::changeDebuggable,
+            bypassIncompatible = model.bypassIncompatible,
+            setBypassIncompatible = model::changeBypassIncompatible,
 
             appName = model.appName,
             appNameIsError = model.appNameIsError,
@@ -89,6 +91,8 @@ fun PatchOptionsScreenContent(
 
     debuggable: Boolean,
     setDebuggable: (Boolean) -> Unit,
+    bypassIncompatible: Boolean,
+    setBypassIncompatible: (Boolean) -> Unit,
 
     appName: String,
     appNameIsError: Boolean,
@@ -121,7 +125,8 @@ fun PatchOptionsScreenContent(
     var showPkgUnlockDialog by rememberSaveable { mutableStateOf(false) }
     if (showPkgUnlockDialog) {
         PackageNameUnlockDialog(
-            blockedTitles = specs.filter { it.pathLocked }.map { it.title },
+            // With "Bypass Incompatible" on, path-gated patches are force-applied, not disabled.
+            blockedTitles = if (bypassIncompatible) emptyList() else specs.filter { it.pathLocked }.map { it.title },
             onConfirm = {
                 showPkgUnlockDialog = false
                 onUnlockPackageName()
@@ -268,6 +273,14 @@ fun PatchOptionsScreenContent(
                         )
                     }
                 }
+
+                SwitchPatchOption(
+                    icon = painterResource(R.drawable.ic_lock_open),
+                    name = stringResource(R.string.patchopts_bypass_incompatible_title),
+                    description = stringResource(R.string.patchopts_bypass_incompatible_desc),
+                    value = bypassIncompatible,
+                    onValueChange = setBypassIncompatible,
+                )
             }
 
             Spacer(Modifier.weight(1f))

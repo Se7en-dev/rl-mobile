@@ -45,7 +45,7 @@ class PatchOptionsModel(
 
     /** Patches flagged [PatchSpec.pathLocked] only work under the stock package name. */
     fun isBlockedByPackageName(spec: PatchSpec): Boolean =
-        spec.pathLocked && packageName != PatchOptions.Default.packageName
+        spec.pathLocked && packageName != PatchOptions.Default.packageName && !bypassIncompatible
 
     /** The package-name field starts locked & editing requires confirming the unlock dialog */
     var packageNameLocked by mutableStateOf(prefilledOptions.packageName == PatchOptions.Default.packageName)
@@ -79,10 +79,20 @@ class PatchOptionsModel(
         debuggable = value
     }
 
+    /** Dev override: force-allow path-gated ("incompatible") patches under a non-stock package name. */
+    var bypassIncompatible by mutableStateOf(prefs.bypassIncompatible)
+        private set
+
+    fun changeBypassIncompatible(value: Boolean) {
+        bypassIncompatible = value
+        prefs.bypassIncompatible = value
+        validatePatchSelection()
+    }
+
     // The accordion renders from [specs]. It defaults to the compiled-in (localized) list and is
     // rebuilt from a custom zip's manifest.json whenever a custom patch set is selected. (Rminder for others about the new custom patch selection flow)
 
-    private val builtinSpecs: List<PatchSpec> = builtinPatchSpecs { context.getString(it) }
+    private val builtinSpecs: List<PatchSpec> = builtinPatchSpecs(context, json)
 
     var specs by mutableStateOf(builtinSpecs)
         private set
@@ -281,6 +291,7 @@ class PatchOptionsModel(
             val bytes = ZipReader(file).use { it.openEntry(MANIFEST_NAME)?.read() } ?: return null
             json.decodeFromString(PatchManifest.serializer(), bytes.decodeToString())
                 .patches
+                .sortedBy { it.order }   // manifest is authoritative for UI order (not KnownPatch)
                 .takeIf { it.isNotEmpty() }
         } catch (t: Throwable) {
             Log.w(BuildConfig.TAG, "Failed to parse $MANIFEST_NAME; using built-in list", t)
@@ -320,10 +331,19 @@ class PatchOptionsModel(
         null
     }
 
-    /** Default (non-custom) source: the latest release manifest, falling back to the built-in list. */
+    private fun loadCachedReleaseManifestSpecs(): List<PatchSpec>? =
+        paths.cacheDownloadDir
+            .listFiles { f -> f.name.startsWith("manifest-") && f.name.endsWith(".zip") }
+            ?.maxByOrNull { it.lastModified() }
+            ?.let { loadManifestSpecs(it) }
+            ?.also { Log.i(BuildConfig.TAG, "Loaded ${it.size} patches from cached release manifest (offline)") }
+
+    /** Default (non-custom) source: latest release manifest → last cached manifest → built-in list. */
     private fun loadDefaultSpecs() = screenModelScope.launchIO {
         mainThread { specsLoading = true }
-        val loaded = loadLatestReleaseSpecs() ?: builtinSpecs
+        // Only hit the network when actually online
+        val loaded = (if (context.isOnline()) loadLatestReleaseSpecs() else null)
+            ?: loadCachedReleaseManifestSpecs() ?: builtinSpecs
         mainThread {
             specs = loaded
             validatePatchSelection()

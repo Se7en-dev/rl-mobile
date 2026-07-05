@@ -228,3 +228,13 @@ fun ProviderFactory.execIgnoreCode(vararg command: String): String = try {
 } catch (_: Exception) {
     ""
 }
+
+// Sync Local Cached Assets with Repo Releases to keep them up to date
+val syncBundledManifest by tasks.registering(Copy::class) {
+    val src = rootProject.rootDir.resolve("../patches/manifest.json")
+    onlyIf { src.exists() }
+    from(src)
+    into(layout.projectDirectory.dir("src/main/assets"))
+    rename { "patches-manifest.json" }
+}
+tasks.named("preBuild") { dependsOn(syncBundledManifest) }
