@@ -22,15 +22,6 @@
      iget-object v0, v3, Lcom/tidal/android/feature/playerscreen/ui/s$a;->c:Lcom/tidal/android/feature/playerscreen/ui/d;
 
      .line 234
-@@ -5794,6 +5814,8 @@
-     .line 336
-     iget-object v3, v10, Lcom/tidal/android/feature/playerscreen/ui/s$a;->l:Lcom/tidal/android/feature/playerscreen/ui/p;
-
-+    const/4 v3, 0x0    # RL move-playing-from: force null -> hide source at bottom (rendered above the title instead)
-+
-     if-nez v3, :cond_52
-
-     const v3, 0x26ba353b
 --- a/com/tidal/android/feature/playerscreen/ui/composables/k2.smali
 +++ b/com/tidal/android/feature/playerscreen/ui/composables/k2.smali
 @@ -632,6 +632,39 @@

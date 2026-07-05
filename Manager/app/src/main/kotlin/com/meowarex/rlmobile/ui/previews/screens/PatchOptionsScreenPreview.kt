@@ -9,6 +9,7 @@ import com.meowarex.rlmobile.network.utils.SemVer
 import com.meowarex.rlmobile.ui.screens.componentopts.PatchComponent
 import com.meowarex.rlmobile.ui.screens.patchopts.*
 import com.meowarex.rlmobile.ui.theme.ManagerTheme
+import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
 // This preview has scrollable/interactable content that cannot be tested from an IDE preview
@@ -21,7 +22,7 @@ private fun PatchOptionsScreenPreview(
     parameters: PatchOptionsParameters,
 ) {
     val context = LocalContext.current
-    val specs = remember { builtinPatchSpecs { context.getString(it) } }
+    val specs = remember { builtinPatchSpecs(context, Json { ignoreUnknownKeys = true }) }
 
     ManagerTheme {
         PatchOptionsScreenContent(
@@ -29,6 +30,8 @@ private fun PatchOptionsScreenPreview(
             isDevMode = parameters.isDevMode,
             debuggable = parameters.debuggable,
             setDebuggable = {},
+            bypassIncompatible = false,
+            setBypassIncompatible = {},
             appName = parameters.appName,
             appNameIsError = parameters.appNameIsError,
             setAppName = {},

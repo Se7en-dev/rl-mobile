@@ -22,7 +22,8 @@ class PathManager(
 
     val patchingDownloadDir = patchingDir.resolve("downloads")
 
-    val cacheDownloadDir = context.cacheDir.resolve("downloads")
+    // Persistent Stash of assets for Offline Repatching
+    val cacheDownloadDir = patchingDir.resolve("downloads-cache")
 
     val customComponentsDir = patchingDir.resolve("custom")
 
@@ -34,11 +35,15 @@ class PathManager(
 
     val patchedApk = patchingWorkingDir.resolve("patched.apk")
 
+    // Persistent snapshot of the last successful release fetch (build info + patches asset URL)
+    val cachedReleaseInfo = patchingDir.resolve("release-info.json")
+
     fun clearCache() {
         val targets = arrayOf(
             patchingDownloadDir,
             patchingWorkingDir,
             cacheDownloadDir,
+            cachedReleaseInfo,
             context.cacheDir,
         )
         for (dir in targets) {
@@ -53,6 +58,16 @@ class PathManager(
     fun cachedSmaliPatches(version: SemVer) = patchingDownloadDir
         .resolve("patches")
         .resolve("$version.zip")
+
+    fun hasCachedTidalApk(version: Int, split: String = "base"): Boolean {
+        val rel = "tidal/$version/$split.apk"
+        return patchingDownloadDir.resolve(rel).exists() || cacheDownloadDir.resolve(rel).exists()
+    }
+
+    fun hasCachedSmaliPatches(version: SemVer): Boolean {
+        val rel = "patches/$version.zip"
+        return patchingDownloadDir.resolve(rel).exists() || cacheDownloadDir.resolve(rel).exists()
+    }
 
     fun customTidalApks() = customTidalApksDir.listFiles()?.asList() ?: emptyList()
 

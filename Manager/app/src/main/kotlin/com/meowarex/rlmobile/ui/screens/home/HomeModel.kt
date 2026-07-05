@@ -19,7 +19,9 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.diamondminer88.zip.ZipReader
 import com.meowarex.rlmobile.BuildConfig
 import com.meowarex.rlmobile.R
+import com.meowarex.rlmobile.manager.PathManager
 import com.meowarex.rlmobile.manager.PreferencesManager
+import com.meowarex.rlmobile.manager.ReleaseInfoCache
 import com.meowarex.rlmobile.network.models.GithubCommit
 import com.meowarex.rlmobile.network.models.RLBuildInfo
 import com.meowarex.rlmobile.network.services.RadiantLyricsGithubService
@@ -42,6 +44,7 @@ class HomeModel(
     private val github: RadiantLyricsGithubService,
     private val json: Json,
     private val prefs: PreferencesManager,
+    private val paths: PathManager,
 ) : ScreenModel {
 
     var state by mutableStateOf<HomeState>(HomeState.Loading)
@@ -170,16 +173,23 @@ class HomeModel(
 
         refreshingLock.withLock {
             val pkg = fetchInstalled()
-            val remote = async(Dispatchers.IO) { if (remoteDataJson == null) fetchRemoteData() }
-            remote.await()
+            // Skip the remote fetch entirely when offline
+            val online = application.isOnline()
+            if (online) {
+                val remote = async(Dispatchers.IO) { if (remoteDataJson == null) fetchRemoteData() }
+                remote.await()
+            }
 
             val install = pkg?.toInstallData()
             val latest = remoteDataJson?.tidalVersionCode
+            val offlineRepatchReady = hasOfflineRepatchAssets()
 
             mainThread {
                 state = HomeState.Loaded(
                     install = install,
                     latestTidalVersionCode = latest,
+                    offline = !online,
+                    offlineRepatchReady = offlineRepatchReady,
                 )
                 maybeCheckManagerUpdate(pkg)
             }
@@ -255,6 +265,13 @@ class HomeModel(
                 code = versionCode,
             ),
         )
+    }
+
+    // check if an offline "Local Repatch" is possible
+    private fun hasOfflineRepatchAssets(): Boolean {
+        val info = ReleaseInfoCache.load(paths, json) ?: return false
+        return paths.hasCachedTidalApk(info.data.tidalVersionCode) &&
+            paths.hasCachedSmaliPatches(info.data.patchesVersion)
     }
 
     private suspend fun fetchRemoteData() {

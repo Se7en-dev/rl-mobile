@@ -103,8 +103,21 @@
       "default": true
     },
     {
-      "id": "PlayerOneHanded",
+      "id": "PlayerMovePlayingFrom",
       "order": 37,
+      "fileNames": [
+        "player-move-playing-from.patch"
+      ],
+      "extensionFiles": [
+        "radiant/PlayingFrom.smali"
+      ],
+      "title": "Playing From",
+      "description": "Shows the source name (playlist/album/mix) above the track title",
+      "default": true
+    },
+    {
+      "id": "PlayerOneHanded",
+      "order": 38,
       "fileNames": [
         "player-one-handed.patch"
       ],
@@ -158,19 +171,6 @@
       "title": "Replace Share Button",
       "description": "Replaces the share button with the Tidal Connect button from the top of the screen. (it's in the menu already)",
       "default": true
-    },
-    {
-      "id": "PlayerMovePlayingFrom",
-      "order": 44,
-      "fileNames": [
-        "player-move-playing-from.patch"
-      ],
-      "extensionFiles": [
-        "radiant/PlayingFrom.smali"
-      ],
-      "title": "Move Playing From",
-      "description": "Shows the source name (e.g. the playlist or album you're playing from) just above the track title, in the artist text style, instead of at the bottom of the player.",
-      "default": false
     },
     {
       "id": "MiniPlayerRedesign",
@@ -307,7 +307,7 @@
       "category": "integration",
       "pathLocked": true,
       "fileNames": [
-        "waze-media-browser.patch"
+        "integration-waze-playback.patch"
       ],
       "extensionFiles": [
         "radiant/WazeInitReceiver.smali",

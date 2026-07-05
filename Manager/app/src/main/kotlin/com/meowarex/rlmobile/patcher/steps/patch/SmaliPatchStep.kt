@@ -1,5 +1,6 @@
 package com.meowarex.rlmobile.patcher.steps.patch
 
+import android.content.Context
 import com.meowarex.rlmobile.R
 import com.meowarex.rlmobile.manager.PathManager
 import com.meowarex.rlmobile.patcher.StepRunner
@@ -10,6 +11,7 @@ import com.meowarex.rlmobile.patcher.steps.download.CopyDependenciesStep
 import com.meowarex.rlmobile.patcher.steps.download.DownloadPatchesStep
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchManifest
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptions
+import com.meowarex.rlmobile.ui.screens.patchopts.PatchSpec
 import com.meowarex.rlmobile.ui.screens.patchopts.builtinPatchSpecs
 import com.android.tools.smali.baksmali.Baksmali
 import com.android.tools.smali.baksmali.BaksmaliOptions
@@ -31,6 +33,10 @@ class SmaliPatchStep(
 ) : Step(), IDexProvider, KoinComponent {
     private val paths: PathManager by inject()
     private val json: Json by inject()
+    private val context: Context by inject()
+
+    var specs: List<PatchSpec> = emptyList()
+        private set
 
     override val group = StepGroup.Patch
     override val localizedName = R.string.patch_step_patch_smali
@@ -55,7 +61,7 @@ class SmaliPatchStep(
             container.log("Failed to parse manifest.json (${t.message}); using built-in patch specs")
             null
         }
-        val specs = manifestSpecs ?: builtinPatchSpecs { "" }
+        specs = manifestSpecs ?: builtinPatchSpecs(context, json)
         container.log(
             "Loaded ${specs.size} patch specs from " +
                 if (manifestSpecs != null) "manifest.json" else "built-in list"

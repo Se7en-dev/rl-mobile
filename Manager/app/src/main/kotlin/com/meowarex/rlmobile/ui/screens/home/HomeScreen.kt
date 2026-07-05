@@ -210,14 +210,19 @@ private fun ColumnScope.HomeContent(
     }
 
     val blockedByManagerUpdate = managerUpdateAvailable && (patchesBehind || tidalBehind)
+    val canLocalRepatch = install != null && state.offlineRepatchReady
+    val onlineEnabled = state.latestTidalVersionCode != null || install != null
+    val buttonEnabled = !blockedByManagerUpdate && (if (state.offline) canLocalRepatch else onlineEnabled)
     Button(
         onClick = if (install == null) onInstall else onRepatch,
-        enabled = state.latestTidalVersionCode != null && !blockedByManagerUpdate,
+        enabled = buttonEnabled,
         modifier = Modifier.fillMaxWidth(),
     ) {
         val label = when {
             blockedByManagerUpdate -> "Manager Update Required"
-            state.latestTidalVersionCode == null -> "Loading…"
+            state.offline && install != null -> "Local Repatch"
+            state.offline -> "No Network"
+            install == null && state.latestTidalVersionCode == null -> "Loading…"
             install == null -> "Install"
             patchesBehind && tidalBehind -> "Update Patches & TIDAL"
             patchesBehind -> "Update Patches"
@@ -231,6 +236,18 @@ private fun ColumnScope.HomeContent(
             modifier = Modifier
                 .basicMarquee()
                 .fillMaxWidth(),
+        )
+    }
+
+    if (state.offline && install != null) {
+        Text(
+            text = "No Network Connection",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp),
         )
     }
 

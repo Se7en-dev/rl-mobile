@@ -6,7 +6,6 @@ import com.meowarex.rlmobile.patcher.steps.StepGroup
 import com.meowarex.rlmobile.patcher.steps.base.Step
 import com.meowarex.rlmobile.patcher.steps.download.CopyDependenciesStep
 import com.meowarex.rlmobile.patcher.util.ManifestPatcher
-import com.meowarex.rlmobile.ui.screens.patchopts.KnownPatch
 import com.meowarex.rlmobile.ui.screens.patchopts.PatchOptions
 import com.github.diamondminer88.zip.ZipReader
 import com.github.diamondminer88.zip.ZipWriter
@@ -27,8 +26,9 @@ class PatchManifestStep(private val options: PatchOptions) : Step() {
             ?: throw IllegalArgumentException("No manifest found in APK")
 
         container.log("Patching manifest")
-        val enableWazeIntegration =
-            options.patchStates[KnownPatch.WazeIntegration.name] ?: KnownPatch.WazeIntegration.default.isEnabled
+        val wazeDefault = container.getStep<SmaliPatchStep>().specs
+            .firstOrNull { it.id == "WazeIntegration" }?.defaultEnabled ?: false
+        val enableWazeIntegration = options.patchStates["WazeIntegration"] ?: wazeDefault
 
         val patchedManifest = ManifestPatcher.patchManifest(
             manifestBytes = manifest,

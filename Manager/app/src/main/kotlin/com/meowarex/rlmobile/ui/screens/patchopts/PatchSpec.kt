@@ -1,9 +1,11 @@
 package com.meowarex.rlmobile.ui.screens.patchopts
 
+import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.math.roundToInt
 
 @Serializable
@@ -157,74 +159,17 @@ data class SmaliEncode(
     }
 }
 
-fun builtinPatchSpecs(resolve: (Int) -> String): List<PatchSpec> =
-    KnownPatch.All.map { patch ->
-        PatchSpec(
-            id = patch.name,
-            order = patch.order,
-            fileNames = patch.fileNames,
-            extensionFiles = patch.extensionFiles,
-            title = resolve(patch.titleRes),
-            description = resolve(patch.descRes),
-            defaultEnabled = patch.default.isEnabled,
-            requires = patch.requires.map { it.name },
-            disables = patch.disables.map { it.name },
-            variants = patch.variants.map { VariantSpec(resolve(it.titleRes), it.fileNames, it.extensionFiles) },
-            defaultVariantIndex = patch.defaultVariantIndex,
-            advancedOptions = patch.advancedOptions.map { it.toSpec(resolve) },
-            category = patch.category,
-            pathLocked = patch.pathLocked,
-        )
-    }
+/** Asset filename of the bundled fallback manifest snapshot (a copy of the release manifest.json). */
+const val BUNDLED_MANIFEST_ASSET = "patches-manifest.json"
 
-private fun PatchOption.toSpec(resolve: (Int) -> String): OptionSpec = when (this) {
-    is PatchOption.Toggle -> OptionSpec.Toggle(
-        key = key,
-        title = resolve(titleRes),
-        description = resolve(descRes),
-        default = default,
-        fileNames = fileNames,
-        extensionFiles = extensionFiles,
-        inline = inline,
-        requiresVariant = requiresVariant,
-        requiresOption = requiresOption,
-        hidesVariants = hidesVariants,
-        relabelVariants = relabelVariants.mapValues { resolve(it.value) },
-        token = token,
-    )
-
-    is PatchOption.Slider -> OptionSpec.Slider(
-        key = key,
-        title = resolve(titleRes),
-        description = resolve(descRes),
-        default = default,
-        min = valueRange.start,
-        max = valueRange.endInclusive,
-        steps = steps,
-        displayAsPercent = displayAsPercent,
-        unit = unitRes?.let(resolve),
-        token = token,
-        encode = encode,
-    )
-
-    is PatchOption.Choice -> OptionSpec.Choice(
-        key = key,
-        title = resolve(titleRes),
-        description = if (descRes != 0) resolve(descRes) else "",
-        entries = entries.map { resolve(it.labelRes) },
-        defaultIndex = defaultIndex,
-        values = entries.map { it.value ?: "" },
-        requiresOption = requiresOption,
-        token = token,
-    )
-
-    is PatchOption.Color -> OptionSpec.Color(
-        key = key,
-        title = resolve(titleRes),
-        description = if (descRes != 0) resolve(descRes) else "",
-        default = default,
-        token = token,
-    )
+// Fallback patch list (snapshot of the release manifest bundled in the app's assets)
+fun builtinPatchSpecs(context: Context, json: Json): List<PatchSpec> = try {
+    context.assets.open(BUNDLED_MANIFEST_ASSET).use { it.readBytes() }
+        .let { json.decodeFromString(PatchManifest.serializer(), it.decodeToString()) }
+        .patches
+        .sortedBy { it.order }
+} catch (t: Throwable) {
+    emptyList()
 }
 
 @Immutable

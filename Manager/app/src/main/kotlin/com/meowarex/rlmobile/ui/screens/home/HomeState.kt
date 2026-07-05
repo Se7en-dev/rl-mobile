@@ -8,5 +8,7 @@ sealed interface HomeState {
     data class Loaded(
         val install: InstallData?,
         val latestTidalVersionCode: Int?,
+        val offline: Boolean = false,
+        val offlineRepatchReady: Boolean = false,
     ) : HomeState
 }

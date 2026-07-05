@@ -12,6 +12,8 @@ class PreferencesManager(preferences: SharedPreferences) : BasePreferenceManager
     var devMode by booleanPreference("dev_mode", false)
     var installer by enumPreference<InstallerSetting>("installer", InstallerSetting.PackageInstaller)
     var keepPatchedApks by booleanPreference("keep_patched_apks", false)
+    // Dev: force-apply path-gated ("incompatible") patches even under a non-stock package name
+    var bypassIncompatible by booleanPreference("bypass_incompatible", false)
     var showPlayProtectWarning by booleanPreference("show_play_protect_warning", true)
     var autoUpdateCheck by booleanPreference("auto_update_check", true)
 
